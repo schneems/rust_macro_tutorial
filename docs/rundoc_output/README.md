@@ -33,11 +33,11 @@ $ cargo init cache_diff --lib
     Creating library package
 warning: compiling this new package may not work due to invalid workspace configuration
 
-failed to load manifest for workspace member `/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250213-46538-2tbwca/cache_diff/cache_diff_derive`
-referenced by workspace at `/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250213-46538-2tbwca/cache_diff/Cargo.toml`
+failed to load manifest for workspace member `/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250213-12744-woay1/cache_diff/cache_diff_derive`
+referenced by workspace at `/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250213-12744-woay1/cache_diff/Cargo.toml`
 
 Caused by:
-  failed to read `/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250213-46538-2tbwca/cache_diff/cache_diff_derive/Cargo.toml`
+  failed to read `/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250213-12744-woay1/cache_diff/cache_diff_derive/Cargo.toml`
 
 Caused by:
   No such file or directory (os error 2)
@@ -279,14 +279,14 @@ warning: virtual workspace defaulting to `resolver = "1"` despite one or more wo
 note: to keep the current resolver, specify `workspace.resolver = "1"` in the workspace root's manifest
 note: to use the edition 2021 resolver, specify `workspace.resolver = "2"` in the workspace root's manifest
 note: for more details see https://doc.rust-lang.org/cargo/reference/resolver.html#resolver-versions
-   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250213-46538-2tbwca/cache_diff/cache_diff)
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250213-46538-2tbwca/cache_diff/cache_diff_derive)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.16s
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250213-12744-woay1/cache_diff/cache_diff_derive)
+   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250213-12744-woay1/cache_diff/cache_diff)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.19s
      Running unittests src/lib.rs (target/debug/deps/cache_diff-21705cfac33b14eb)
 
 running 2 tests
-test tests::test_unchanged_metadata ... ok
 test tests::test_changed_metadata ... ok
+test tests::test_unchanged_metadata ... ok
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 

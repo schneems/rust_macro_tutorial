@@ -86,7 +86,8 @@ mod tests {
                 diff.push(
                     format!("architecture (`{}` to `{}`)",
                     old.architecture,
-                    self.architecture))
+                    self.architecture)
+                )
             }
             diff
         }
