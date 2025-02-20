@@ -56,6 +56,7 @@ Another struct had a different problem, it contained a [`std::path::PathBuf`](ht
 What that means is you cannot directly use it in a `format!()` or `println!()` macro or it will error.  If you try to run this code:
 
 ```rust
+:::-- $ cd ..
 :::-- $ cargo new lol
 :::-- $ cd lol
 :::-> file.write src/main.rs
@@ -71,7 +72,9 @@ Then it will produce this error:
 
 ```
 :::-> fail.$ cargo test
+:::-- $ cd ..
 :::-- $ rm -rf lol
+:::-- $ cd cache_diff
 ```
 
 The [std::path::PathBuf::display() function docs](https://doc.rust-lang.org/std/path/struct.PathBuf.html#method.display) show how you can call `display()` on it to print or format the value.
