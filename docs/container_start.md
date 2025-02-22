@@ -1,0 +1,133 @@
+## Define the Container
+
+> Skip this if you don't want your code to compile
+
+If you didn't skip over it, you may remember that a container in proc-macro land refers to a struct or enum. We want a way to model a container that holds zero or more named fields:
+
+```rust
+:::>> print.erb
+<%
+import = ["use crate::parse_field::ParseField;"]
+import << "use crate::{MACRO_NAME, NAMESPACE};\n"
+%>
+
+<%= append(filename: "cache_diff_derive/src/parse_container.rs", use: import, code: <<-CODE)
+/// Container (i.e. struct Metadata { ... }) and its parsed attributes
+/// i.e. `#[cache_diff( ... )]`
+#[derive(Debug)]
+pub(crate) struct ParseContainer {
+    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programatic
+    /// reference to `Metadata` that can be used along with `quote!` to produce code.
+    pub(crate) ident: syn::Ident,
+    /// Fields (i.e. `name: String`) and their associated attributes i.e. `#[cache_diff(...)]`
+    pub(crate) fields: Vec<ParseField>,
+}
+CODE
+
+%>
+```
+
+Like before, we're holding a reference to `syn::Ident` which holds the identity of the struct. Then, instead of holding a `syn` data type for fields, we're holding a `Vec` of our the `ParseField` struct we defined previously.
+
+Don't forget to let our project know about the new file by adding a `mod` declaration:
+
+```rust
+:::>> print.erb
+<%= append(filename: "cache_diff_derive/src/lib.rs", use: "mod parse_container;\n") %>
+```
+
+Now that we've got a place to hold the data, let's build it from the input AST:
+
+```rust
+:::>> print.erb
+<%= append(filename: "cache_diff_derive/src/parse_container.rs", code: <<-CODE)
+impl ParseContainer {
+    pub(crate) fn from_derive_input(input: &syn::DeriveInput) -> Result<Self, syn::Error> {
+        let ident = input.ident.clone();
+        let fields = match input.data {
+            syn::Data::Struct(syn::DataStruct {
+                fields: syn::Fields::Named(syn::FieldsNamed { ref named, .. }),
+                ..
+            }) => named,
+            _ => {
+                return Err(syn::Error::new(
+                    ident.span(),
+                    format!("{MACRO_NAME} can only be used on named structs"),
+                ))
+            }
+        }
+        .into_iter()
+        .map(ParseField::from_field)
+        .collect::<Result<Vec<ParseField>, syn::Error>>()?;
+
+        Ok(ParseContainer { ident, fields })
+    }
+}
+CODE
+%>
+```
+
+The function takes in a `syn::DeriveInput` and returns itself or a `syn::Error` (just like `ParseField` did!):
+
+```rust
+:::-> $ grep -A1000 'pub(crate) fn from_derive_input' cache_diff_derive/src/parse_container.rs | awk '/{/ {print; exit} {print}'
+```
+
+While `ParseField` took in a `syn::Field`, there's no pre-defined "container" type from syn, instead `syn::DeriveInput` is anything that could be passed to a derive macro. And since derive macros can only be applied to containers you can mentally substitute "container" every time you see "Derive Input".
+
+All containers must be named so we can pull an identity directly (without needint to raise an error like we did with fields):
+
+```rust
+:::-> $ grep -A1000 'let ident' cache_diff_derive/src/parse_container.rs | awk '/\;/ {print; exit} {print}'
+```
+
+This next bit is tricky:
+
+```rust
+:::-> $ grep -A1000 'let fields =' cache_diff_derive/src/parse_container.rs | awk '/\;/ {print; exit} {print}'
+```
+
+Because derive input (a.k.a containers) can be different shapes (struct, enum, or union) we can use a match statement to pull out the information we need from named fields.
+
+The return value from `syn::Data` here is a `&syn::Punctuated<syn::Field, syn::Token::Comma>` which is a fancy way of saying that it's a `syn::Field` that is separated by comma's. We can iterate over that type to yield `&syn::Field`, which is exactly what our `ParseField` function takes in:
+
+```rust
+:::-> $ grep -A1000 'into_iter()' cache_diff_derive/src/parse_container.rs | awk '/\;/ {print; exit} {print}'
+```
+
+If that parsing is successful then we've got our data! But not so fast cowpoke, we can't mosey on until we write some tests:
+
+```rust
+:::>> print.erb
+<% import = "    use super::*;\n" %>
+<%= append(filename: "cache_diff_derive/src/parse_container.rs", test_use: import, test_code: <<CODE)
+    #[test]
+    fn test_parses() {
+        let container = ParseContainer::from_derive_input(&syn::parse_quote! {
+            struct Metadata {
+                version: String
+            }
+        })
+        .unwrap();
+        assert_eq!(1, container.fields.len());
+
+        let container = ParseContainer::from_derive_input(&syn::parse_quote! {
+            struct Metadata {
+                version: String,
+                checksum: String
+            }
+        })
+        .unwrap();
+        assert_eq!(2, container.fields.len());
+    }
+CODE
+%>
+```
+
+Verify it works:
+
+```
+:::>- $ cargo test
+```
+
+At this point, we've got a custom representation for our fields and for the container (that holds the fields). We'll use this to generate a simple version of our trait before extending our simple data structures to hold attribute information.

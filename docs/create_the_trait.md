@@ -2,18 +2,9 @@
 
 Create a top level workspace directory
 
-```
+```term
 :::>> $ mkdir cache_diff
 :::>> $ cd cache_diff
-```
-
-```
-:::>> file.write "Cargo.toml"
-[workspace]
-members = [
-    "cache_diff",
-    "cache_diff_derive"
-]
 ```
 
 Now initialize two projects:
@@ -23,7 +14,17 @@ Now initialize two projects:
 :::>> $ cargo init cache_diff_derive --lib
 ```
 
-Write a top level `.gitignore`.
+Tell Rust that these two projects live under one unified workspace by creating a `Cargo.toml` in the root (one directory above the projects you just made):
+
+```
+:::-> file.write "Cargo.toml"
+[workspace]
+members = [
+    "cache_diff",
+    "cache_diff_derive"
+]
+resolver = "2"
+```
 
 ```
 :::>> file.write .gitignore
@@ -41,13 +42,16 @@ We need two crates because a procmacro must live in a stand alone crate. This al
 
 ## Define the CacheDiff trait
 
-Once the project is setup, we'll start off by defining a public trait.
+Once the project is setup, we'll start off by defining a public trait:
 
 ```rust
-:::>> file.write cache_diff/src/lib.rs
+:::>> print.erb
+<%= append(filename: "cache_diff/src/lib.rs", code: <<-CODE)
 pub trait CacheDiff {
     fn diff(&self, old: &Self) -> Vec<String>;
 }
+CODE
+%>
 ```
 
 >note
@@ -55,19 +59,15 @@ pub trait CacheDiff {
 
 This trait is short. It's designed to communicate that a struct is intended to be used as a cache key. When compared to an older version of the struct, it should return an empty `Vec` if there are no differences (and the cache should be preserved). When the cache should be cleared, the entries represent list of human readable reasons why the cache was cleared (what is different between the two structs). The primary use case is that "metadata" structs are serialized to TOML to know when we can invalidate a layer in a [Cloud Native Buildpack (CNB) written in Rust with the libcnb.rs](https://github.com/heroku/libcnb.rs).
 
-
 ## Manually implement the trait
 
 Without a macro, a maintainer would need to manually implement the trait, here's a test demonstrating what that would look like.
 
-First we will add a stringly typed `Metadata` struct and implement `CacheDiff` for this struct to simulate a world where we're storing a version of an architecture dependent binary that we're installing.
+First we will add a stringly typed `Metadata` struct and implement `CacheDiff` for this struct to simulate a world where we're storing a version of an architecture dependent binary that we're installing:
 
 ```rust
-:::>> file.append cache_diff/src/lib.rs
-#[cfg(test)]
-mod tests {
-    use super::*;
-
+:::>> print.erb
+<%= append(filename: "cache_diff/src/lib.rs", test_use: "    use super::*;\n", test_code: <<-CODE)
     struct Metadata {
         version: String,
         architecture: String,
@@ -92,15 +92,17 @@ mod tests {
             diff
         }
     }
-
+CODE
+%>
 ```
 
 > Skip the rest of this section if: You already understand how the trait interface could be used and could write your own tests for it.
 
-Now, add a test for this behavior.
+Now, add a test for this behavior:
 
 ```rust
-:::>> file.append cache_diff/src/lib.rs
+:::>> print.erb
+<%= append(filename: "cache_diff/src/lib.rs", test_code: <<-CODE)
     #[test]
     fn test_changed_metadata() {
         let old = Metadata {
@@ -120,12 +122,15 @@ Now, add a test for this behavior.
             new.diff(&old)
         );
     }
+CODE
+%>
 ```
 
-It's usually a good idea to assert both positive an negative behavior.
+It's usually a good idea to assert both positive an negative behavior:
 
 ```rust
-:::>> file.append cache_diff/src/lib.rs
+:::>> print.erb
+<%= append(filename: "cache_diff/src/lib.rs", test_code: <<-CODE)
     #[test]
     fn test_unchanged_metadata() {
         let old = Metadata {
@@ -140,19 +145,14 @@ It's usually a good idea to assert both positive an negative behavior.
             diff
         );
     }
-```
-
-To get our code to compile, make sure there's a trailing curly bracket.
-
-```
-:::>> file.append cache_diff/src/lib.rs
-}
+CODE
+%>
 ```
 
 Your file should now look like this:
 
-```
-:::>> $ cat cache_diff/src/lib.rs
+```rust
+:::-> $ cat cache_diff/src/lib.rs
 ```
 
 And when you run tests, it should look a little like this:

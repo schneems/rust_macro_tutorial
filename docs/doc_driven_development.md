@@ -2,7 +2,7 @@
 
 > Skip this if: You are extremely familiar with derive macros and their associated terminology and interfaces.
 
-A derive macro lets us implement traits on data structures with sensible defaults. A popular library that has a derive macro is [`serde`](https://serde.rs/) a (ser)ialiazation/(de)serialization library. Here's an example:
+A derive macro lets us implement traits on data structures with sensible defaults. A popular library that has a derive macro is [`serde`](https://serde.rs/) a (ser)ialiazation/(de)serialization library. Here's an example using [v1.0.218](https://docs.rs/serde/1.0.218/serde/index.html):
 
 ```rust
 use serde::{Serialize, Deserialize};
