@@ -28,15 +28,15 @@ To use this code we've got to `mod` it from the `lib.rs`
 
 ```rust
 :::>> print.erb
-<%= append(filename: "cache_diff_derive/src/lib.rs", use: "mod parse_field;\n") %>
+<%= append(filename: "cache_diff_derive/src/lib.rs", mod: "mod parse_field;") %>
 ```
 
 Now that we've got somewhere to put data, we need some logic:
 
 ```rust
 :::>> print.erb
-<% import = ["use crate::{MACRO_NAME, NAMESPACE};"] %>
-<% import << "use syn::spanned::Spanned;\n" %>
+<% import = ["use crate::MACRO_NAME;"] %>
+<% import << "use syn::spanned::Spanned;" %>
 <% code = <<-CODE
 impl ParseField {
     pub(crate) fn from_field(field: &syn::Field) -> Result<Self, syn::Error> {
@@ -89,7 +89,6 @@ But don't take my word for it, let's see the code in action:
 ```rust
 :::>> print.erb
 <% import = ["    use super::*;"] %>
-<% import << "    use syn::parse::Parse;\n" %>
 <% append(filename: "cache_diff_derive/src/parse_field.rs", test_use: import, test_code: <<-CODE)
     #[test]
     fn test_parse_field_plain() {

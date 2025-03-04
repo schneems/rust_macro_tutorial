@@ -47,7 +47,7 @@ mod tests {
     fn test_display_attribute_parsing() {
         let input: Vec<syn::Attribute> =
             syn::parse_quote! { #[cache_diff(display = std::path::PathBuf::display)] };
-        let result = ParsedAttributes::from_attributes(&input).unwrap();
+        let result = ParsedAttributes::from_attrs(&input.attrs).unwrap();
         assert!(matches!(
             result,
             ParsedAttributes {
@@ -59,7 +59,7 @@ mod tests {
 }
 ```
 
-This test uses `syn::parse_quote` to parse `#[cache_diff(display = std::path::PathBuf::display)]` into a `Vec<syn::Attribute>`, we then pass it into the derived function `from_attributes` given to us via darling. Finally we assert that we got some display and ignore defaulted to false.
+This test uses `syn::parse_quote` to parse `#[cache_diff(display = std::path::PathBuf::display)]` into a `Vec<syn::Attribute>`, we then pass it into the derived function `from_attrs` given to us via darling. Finally we assert that we got some display and ignore defaulted to false.
 
 Now let's test the `ignore` flag:
 
@@ -68,7 +68,7 @@ Now let's test the `ignore` flag:
     fn test_ignore_attribute_parsing() {
         let input: Vec<syn::Attribute> =
             syn::parse_quote! { #[cache_diff(ignore)] };
-        let result = ParsedAttributes::from_attributes(&input).unwrap();
+        let result = ParsedAttributes::from_attrs(&input).unwrap();
         assert!(matches!(
             result,
             ParsedAttributes {

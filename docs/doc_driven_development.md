@@ -1,4 +1,4 @@
-## Understanding attributes
+## Understanding Derive macros and their configuration
 
 > Skip this if: You are extremely familiar with derive macros and their associated terminology and interfaces.
 
@@ -14,7 +14,7 @@ struct Metadata {
 }
 ```
 
-In addition to being able to define a top level trait that we want to derive, we can also configure it with other values called attributes. It's convention to name your attribute a lowercased name of your trait, so we will use the `#[cache_diff()]` attribute namespace.
+In addition to being able to define a top level trait that we want to derive, we can also configure it with other values called attributes. It's convention to name your attribute a lowercased name of your trait, so we will use the `#[cache_diff(...)]` attribute namespace.
 
 Technically we could use any format or DSL inside of the parens, but it's usually a good idea to mimic existing interfaces that people are already comfortable with. Most attributes take `<key> = <value>` and `<stand-alone-key>` formats.  Here's an example of some attributes on serde:
 
@@ -41,11 +41,11 @@ To recap:
 
 There's another type of attribute called "variant attributes" which apply to enum variants, but we won't be using them in this tutorial.
 
-## Explore the interface space by hand
+### Explore the interface space by hand
 
 We could jump write into writing a derive macro, but I want to spend a moment to consider how we want our final project to look like from our user's perspective. In the real world, I prototyped that trait, and implemented it manually for several layers to understand the problem space.
 
-## Explore: Don't ignore the signs
+### Explore: Don't ignore the signs
 
 One of my structs had some data that I wasn't using as a cache key for invalidation, it was recording the number of times the cache had been written to, when it changed I didn't want that to invalidate the cache. This informed me that I should have a way of skipping or ignoring fields that shouldn't be considered cache keys.
 
@@ -92,7 +92,7 @@ use cache_diff::CacheDiff;
 
 #[derive(CacheDiff)]
 struct Metadata {
-    version: String,
+    ruby_version: String,
     architecture: String,
 }
 ```
@@ -109,7 +109,7 @@ use cache_diff::CacheDiff;
 
 #[derive(CacheDiff)]
 struct Metadata {
-    version: String,
+    ruby_version: String,
     architecture: String,
 
     #[cache_diff(ignore)]
@@ -124,7 +124,7 @@ use cache_diff::CacheDiff;
 
 #[derive(CacheDiff)]
 struct Metadata {
-    version: String,
+    ruby_version: String,
     architecture: String,
 
     #[cache_diff(display = std::path::PathBuf::display)]
@@ -142,7 +142,13 @@ The attribute key will be `display` and the path to the function we want to use 
 
 These are sketches of what the code could look like. Here's the IRL README docs that I wrote for these two attributes:
 
-- [cache_diff(ignore)](https://github.com/heroku-buildpacks/cache_diff?tab=readme-ov-file#ignore-attributes)
-- [cache_diff(display = <code path>)](https://github.com/heroku-buildpacks/cache_diff?tab=readme-ov-file#handle-structs-missing-display)
+- [Field attribute: `cache_diff(ignore)`](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#ignore-attributes)
+- [Field attribute: `cache_diff(display = <code path>)`](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#handle-structs-missing-display)
+
+
+In addition to these cutomizations, users also want:
+
+- [The ability to rename  fields. Field attribute: `cache_diff(rename = "<new name>")`](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#rename-attributes)
+- [Customize cache behavior for some fields without having to manually implement the trait for the rest. Container attribute: `cache_diff(custom = <code path>)`](hhttps://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#custom-logic-for-one-field-example)
 
 Now that we know what we want the destination to look like, we're ready to start writing our proc macro!

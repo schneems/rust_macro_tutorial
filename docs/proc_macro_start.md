@@ -6,7 +6,9 @@ To write a proc macro we will need some crates. It's easier to see what they do 
 
 ```toml
 :::>> file.append cache_diff_derive/Cargo.toml
+# Turn Rust code into Tokens
 quote = "1.0.37"
+# Parse tokens into Rust code
 syn = { version = "2.0.83", features = ["extra-traits"] }
 proc-macro2 = "1.0.89"
 ```
@@ -23,7 +25,7 @@ Now we need to add an entrypoint:
 
 ```rust
 :::>> print.erb
-<% import = "use proc_macro::TokenStream;\n" %>
+<% import = "use proc_macro::TokenStream;" %>
 <% code_blocks = [] %>
 <% code_blocks << <<-EOF
 pub(crate) const NAMESPACE: &str = "cache_diff";
@@ -72,8 +74,7 @@ It calls a function `create_cache_diff` which returns a `syn::Result<proc_macro2
 This macro takes converts text into rust code, we can also pass in variables, but for now we just want the code to compile:
 
 ```term
-:::>> print.text $ cargo build
-:::-- $ cargo build --offline
+:::>> $ cargo build
 ```
 
 Congrats! You just wrote your first proc macro! To use it we'll need to expose it through our non-derive crate that also carries the trait definition. First declare a dependency on our derive crate:
@@ -93,7 +94,7 @@ Now we re-export that macro right next to our trait:
 
 ```rust
 :::>> print.erb
-<%= append(filename: "cache_diff/src/lib.rs", use: "pub use cache_diff_derive::CacheDiff;\n") %>
+<%= append(filename: "cache_diff/src/lib.rs", use: "pub use cache_diff_derive::CacheDiff;") %>
 ```
 
 The file should look like this:

@@ -7,4 +7,7 @@
 :::>> rundoc.require "./field_start.md"
 :::>> rundoc.require "./container_start.md"
 :::>> rundoc.require "./proc_macro_simple.md"
+:::>> rundoc.require "./field_attribute_first.md"
+:::>> rundoc.require "./container_attribute_first.md"
+:::>> rundoc.require "./proc_macro_complete.md"
 ```

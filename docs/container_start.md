@@ -8,7 +8,7 @@ If you didn't skip over it, you may remember that a container in proc-macro land
 :::>> print.erb
 <%
 import = ["use crate::parse_field::ParseField;"]
-import << "use crate::{MACRO_NAME, NAMESPACE};\n"
+import << "use crate::NAMESPACE;"
 %>
 
 <%= append(filename: "cache_diff_derive/src/parse_container.rs", use: import, code: <<-CODE)
@@ -33,14 +33,14 @@ Don't forget to let our project know about the new file by adding a `mod` declar
 
 ```rust
 :::>> print.erb
-<%= append(filename: "cache_diff_derive/src/lib.rs", use: "mod parse_container;\n") %>
+<%= append(filename: "cache_diff_derive/src/lib.rs", mod: "mod parse_container;") %>
 ```
 
 Now that we've got a place to hold the data, let's build it from the input AST:
 
 ```rust
 :::>> print.erb
-<%= append(filename: "cache_diff_derive/src/parse_container.rs", code: <<-CODE)
+<%= append(filename: "cache_diff_derive/src/parse_container.rs", use: "use crate::MACRO_NAME;", code: <<-CODE)
 impl ParseContainer {
     pub(crate) fn from_derive_input(input: &syn::DeriveInput) -> Result<Self, syn::Error> {
         let ident = input.ident.clone();
@@ -99,7 +99,7 @@ If that parsing is successful then we've got our data! But not so fast cowpoke, 
 
 ```rust
 :::>> print.erb
-<% import = "    use super::*;\n" %>
+<% import = "    use super::*;" %>
 <%= append(filename: "cache_diff_derive/src/parse_container.rs", test_use: import, test_code: <<CODE)
     #[test]
     fn test_parses() {

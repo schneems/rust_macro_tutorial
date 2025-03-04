@@ -28,8 +28,13 @@ resolver = "2"
 
 ```
 :::>> file.write .gitignore
-/target
+target/
 .DS_Store
+```
+
+```
+:::-- $ echo needed for exa --git-ignore to function properly
+:::-- $ git init
 ```
 
 The project now looks like this:
@@ -67,9 +72,9 @@ First we will add a stringly typed `Metadata` struct and implement `CacheDiff` f
 
 ```rust
 :::>> print.erb
-<%= append(filename: "cache_diff/src/lib.rs", test_use: "    use super::*;\n", test_code: <<-CODE)
+<%= append(filename: "cache_diff/src/lib.rs", test_use: "    use super::*;", test_code: <<-CODE)
     struct Metadata {
-        version: String,
+        ruby_version: String,
         architecture: String,
     }
 
@@ -77,14 +82,14 @@ First we will add a stringly typed `Metadata` struct and implement `CacheDiff` f
         fn diff(&self, old: &Self) -> Vec<String> {
             let mut diff = Vec::new();
 
-            if self.version != old.version {
-                diff.push(format!("version (`{}` to `{}`)",
-                old.version,
-                self.version))
+            if self.ruby_version != old.ruby_version {
+                diff.push(format!("ruby version ({} to {})",
+                old.ruby_version,
+                self.ruby_version))
             }
             if self.architecture != old.architecture {
                 diff.push(
-                    format!("architecture (`{}` to `{}`)",
+                    format!("architecture ({} to {})",
                     old.architecture,
                     self.architecture)
                 )
@@ -106,18 +111,18 @@ Now, add a test for this behavior:
     #[test]
     fn test_changed_metadata() {
         let old = Metadata {
-            version: "3.1.4".to_string(),
+            ruby_version: "3.3.1".to_string(),
             architecture: "amd64".to_string()
         };
         let new = Metadata {
-            version: "3.5.0".to_string(),
+            ruby_version: "3.4.2".to_string(),
             architecture: "arm64".to_string()
         };
 
         assert_eq!(
             vec![
-                "version (`3.1.4` to `3.5.0`)".to_string(),
-                "architecture (`amd64` to `arm64`)".to_string()
+                "ruby version (3.3.1 to 3.4.2)".to_string(),
+                "architecture (amd64 to arm64)".to_string()
             ],
             new.diff(&old)
         );
@@ -134,7 +139,7 @@ It's usually a good idea to assert both positive an negative behavior:
     #[test]
     fn test_unchanged_metadata() {
         let old = Metadata {
-            version: "3.1.4".to_string(),
+            ruby_version: "3.1.4".to_string(),
             architecture: "amd64".to_string()
         };
 
