@@ -286,9 +286,9 @@ And when you run tests, it should look a little like this:
 
 ```
 $ cargo test
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-40366-zxny0g/cache_diff/cache_diff_derive)
-   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-40366-zxny0g/cache_diff/cache_diff)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.16s
+   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-92030-93r2zd/cache_diff/cache_diff)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-92030-93r2zd/cache_diff/cache_diff_derive)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.24s
      Running unittests src/lib.rs (target/debug/deps/cache_diff-2716017b25caff21)
 
 running 2 tests
@@ -393,7 +393,7 @@ fn main() {
 Then it will produce this error:
 
 ```
-   Compiling lol v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-40366-zxny0g/lol)
+   Compiling lol v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-92030-93r2zd/lol)
 error[E0277]: `PathBuf` doesn't implement `std::fmt::Display`
  --> src/main.rs:4:5
   |
@@ -525,7 +525,6 @@ Now we need to add an entrypoint and define some constants we'll use in a bit:
 
 // File: `cache_diff_derive/src/lib.rs`
 use proc_macro::TokenStream;
-
 // Code
 pub(crate) const NAMESPACE: &str = "cache_diff";
 pub(crate) const MACRO_NAME: &str = "CacheDiff";
@@ -604,7 +603,6 @@ Now we re-export that macro right next to our trait, when the "derive" feature i
 // File: `cache_diff/src/lib.rs`
 #[cfg(feature = "derive")]
 pub use cache_diff_derive::CacheDiff;
-
 // Code
 // ...
 ```
@@ -616,7 +614,6 @@ The file should look like this:
 // File: `cache_diff/src/lib.rs`
 #[cfg(feature = "derive")]
 pub use cache_diff_derive::CacheDiff;
-
 // Code
 pub trait CacheDiff {
     fn diff(&self, old: &Self) -> Vec<String>;
@@ -724,7 +721,6 @@ To use this code we've got to `mod` it from the `lib.rs`
 mod parse_field;
 // Use ...
 
-
 // Code
 // ...
 ```
@@ -739,7 +735,6 @@ Now that we've got somewhere to put data, we need some logic:
 // File: `cache_diff_derive/src/parse_field.rs`
 use crate::MACRO_NAME;
 use syn::spanned::Spanned;
-
 // Code
 // ...
 impl ParseField {
@@ -810,7 +805,6 @@ This is our code so far:
 // File: `cache_diff_derive/src/parse_field.rs`
 use crate::MACRO_NAME;
 use syn::spanned::Spanned;
-
 // Code
 /// Field (i.e. `name: String`) of a container (struct) and its parsed attributes
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
@@ -891,7 +885,6 @@ If you didn't skip over it, you may remember that a container in proc-macro land
 
 // File: `cache_diff_derive/src/parse_container.rs`
 use crate::parse_field::ParseField;
-
 // Code
 /// Container (i.e. struct Metadata { ... }) and its parsed attributes
 /// i.e. `#[cache_diff( ... )]`
@@ -916,7 +909,6 @@ Don't forget to let our project know about the new file by adding a `mod` declar
 mod parse_container;
 // Use ...
 
-
 // Code
 // ...
 ```
@@ -928,7 +920,6 @@ Now that we've got a place to hold the data, let's build it from the input AST:
 // File: `cache_diff_derive/src/parse_container.rs`
 // Use ...
 use crate::MACRO_NAME;
-
 // Code
 // ...
 impl ParseContainer {
@@ -1011,7 +1002,6 @@ If that parsing is successful then we've got our data! But not so fast cowpoke, 
 // File: `cache_diff_derive/src/parse_container.rs`
 // Use ...
 
-
 // Code
 // ...
 
@@ -1065,7 +1055,6 @@ Import the structs we created:
 // Use ...
 use parse_container::ParseContainer;
 use parse_field::ParseField;
-
 // Code
 // ...
 ```
@@ -1078,7 +1067,6 @@ Replace our prior cache logic:
 // Mod ...
 
 // Use ...
-
 
 // Code
 // ...
@@ -1098,7 +1086,6 @@ With with these new contents:
 // Mod ...
 
 // Use ...
-
 
 // Code
 // ...
@@ -1245,7 +1232,6 @@ Unfortunately we cannot test the derive macro invocation in the same crate, beca
 //! );
 //! ```
 // Use ...
-
 
 // Code
 // ...
@@ -1400,7 +1386,6 @@ $ cat cache_diff/src/lib.rs
 //! ```
 #[cfg(feature = "derive")]
 pub use cache_diff_derive::CacheDiff;
-
 // Code
 pub trait CacheDiff {
     fn diff(&self, old: &Self) -> Vec<String>;
@@ -1478,7 +1463,6 @@ mod parse_container;
 use proc_macro::TokenStream;
 use parse_container::ParseContainer;
 use parse_field::ParseField;
-
 // Code
 pub(crate) const NAMESPACE: &str = "cache_diff";
 pub(crate) const MACRO_NAME: &str = "CacheDiff";
@@ -1532,7 +1516,6 @@ $ cat cache_diff_derive/src/parse_field.rs
 // File: `cache_diff_derive/src/parse_field.rs`
 use crate::MACRO_NAME;
 use syn::spanned::Spanned;
-
 // Code
 /// Field (i.e. `name: String`) of a container (struct) and its parsed attributes
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
@@ -1595,7 +1578,6 @@ $ cat cache_diff_derive/src/parse_container.rs
 // File: `cache_diff_derive/src/parse_container.rs`
 use crate::parse_field::ParseField;
 use crate::MACRO_NAME;
-
 // Code
 /// Container (i.e. struct Metadata { ... }) and its parsed attributes
 /// i.e. `#[cache_diff( ... )]`
@@ -1690,7 +1672,6 @@ Now define the enum:
 // Use ...
 use std::str::FromStr;
 use strum::IntoEnumIterator;
-
 // Code
 // ...
 /// A single attribute
@@ -1716,7 +1697,6 @@ We will implement the `syn::parse::Parse` trait to allow syn to parse a stream o
 // File: `cache_diff_derive/src/parse_field.rs`
 // Use ...
 use crate::NAMESPACE;
-
 // Code
 // ...
 impl syn::parse::Parse for KnownAttribute {
@@ -1744,7 +1724,6 @@ Here's how that translates to code:
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
 // Use ...
-
 
 // Code
 // ...
@@ -1783,7 +1762,6 @@ We can now parse individual keywords such as `rename` into a `KnownAttribute` en
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
 // Use ...
-
 
 // Code
 // ...
@@ -1866,7 +1844,6 @@ With all that in place, you can add a test and validate that we can parse it int
 // File: `cache_diff_derive/src/parse_field.rs`
 // Use ...
 
-
 // Code
 // ...
 
@@ -1899,7 +1876,6 @@ So far, so good, but if you tried to parse multiple attributes then you'll get a
 // File: `cache_diff_derive/src/parse_field.rs`
 // Use ...
 
-
 // Code
 // ...
 impl ParseAttribute {
@@ -1924,7 +1900,6 @@ Here's a quick test before I circle back and explain what's going on:
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
 // Use ...
-
 
 // Code
 // ...
@@ -1985,7 +1960,6 @@ At this point we've added the ability to extract any cache_diff attributes from 
 // File: `cache_diff_derive/src/parse_field.rs`
 // Use ...
 
-
 // Code
 // ...
 /// Field (i.e. `name: String`) of a container (struct) and its parsed attributes
@@ -2009,7 +1983,6 @@ With with these new contents:
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
 // Use ...
-
 
 // Code
 // ...
@@ -2039,7 +2012,6 @@ We were already storing the ident and desired name of our field, but now we're a
 // File: `cache_diff_derive/src/parse_field.rs`
 // Use ...
 
-
 // Code
 // ...
 fn is_pathbuf(ty: &syn::Type) -> bool {
@@ -2061,7 +2033,6 @@ With that helper code in place we can now extract values to build our new `Parse
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
 // Use ...
-
 
 // Code
 // ...
@@ -2092,7 +2063,6 @@ With with these new contents:
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
 // Use ...
-
 
 // Code
 // ...
@@ -2267,7 +2237,6 @@ $ cat cache_diff/src/lib.rs
 //! ```
 #[cfg(feature = "derive")]
 pub use cache_diff_derive::CacheDiff;
-
 // Code
 pub trait CacheDiff {
     fn diff(&self, old: &Self) -> Vec<String>;
@@ -2345,7 +2314,6 @@ mod parse_container;
 use proc_macro::TokenStream;
 use parse_container::ParseContainer;
 use parse_field::ParseField;
-
 // Code
 pub(crate) const NAMESPACE: &str = "cache_diff";
 pub(crate) const MACRO_NAME: &str = "CacheDiff";
@@ -2402,7 +2370,6 @@ use syn::spanned::Spanned;
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 use crate::NAMESPACE;
-
 // Code
 /// Field (i.e. `name: String`) of a container (struct) and its parsed attributes
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
@@ -2637,7 +2604,6 @@ $ cat cache_diff_derive/src/parse_container.rs
 // File: `cache_diff_derive/src/parse_container.rs`
 use crate::parse_field::ParseField;
 use crate::MACRO_NAME;
-
 // Code
 /// Container (i.e. struct Metadata { ... }) and its parsed attributes
 /// i.e. `#[cache_diff( ... )]`
@@ -2714,7 +2680,6 @@ Like we did with fields, we'll define an enum to hold each container attribute v
 // Use ...
 use std::str::FromStr;
 use strum::IntoEnumIterator;
-
 // Code
 // ...
 /// A single attribute
@@ -2734,7 +2699,6 @@ We will go ahead and add an implementation of `syn::parse::Parse` for `KnownAttr
 // File: `cache_diff_derive/src/parse_container.rs`
 // Use ...
 use crate::NAMESPACE;
-
 // Code
 // ...
 impl syn::parse::Parse for KnownAttribute {
@@ -2764,7 +2728,6 @@ The turning an input into a vector of parsed attributes looks pretty similar as 
 // File: `cache_diff_derive/src/parse_container.rs`
 // Use ...
 
-
 // Code
 // ...
 impl ParseAttribute {
@@ -2790,7 +2753,6 @@ The actual parse code is slightly different, but it should seem like a familiar 
 // File: `cache_diff_derive/src/parse_container.rs`
 // Use ...
 
-
 // Code
 // ...
 impl syn::parse::Parse for ParseAttribute {
@@ -2810,7 +2772,6 @@ Verify your intuition (and my claims) with some tests:
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
 // Use ...
-
 
 // Code
 // ...
@@ -2875,7 +2836,6 @@ Now let's wire it up. Start of by adding a place to store our attribute on the c
 // File: `cache_diff_derive/src/parse_container.rs`
 // Use ...
 
-
 // Code
 // ...
 /// Container (i.e. struct Metadata { ... }) and its parsed attributes
@@ -2898,7 +2858,6 @@ With with these new contents:
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
 // Use ...
-
 
 // Code
 // ...
@@ -2924,7 +2883,6 @@ Then update the logic for building the container. Replace this code:
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
 // Use ...
-
 
 // Code
 // ...
@@ -2960,7 +2918,6 @@ With with these new contents:
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
 // Use ...
-
 
 // Code
 // ...
@@ -3076,7 +3033,6 @@ Taking these two errors out doesn't change much, but I consider the error experi
 // File: `cache_diff_derive/src/parse_container.rs`
 // Use ...
 
-
 // Code
 // ...
 
@@ -3127,7 +3083,6 @@ With the parsing logic contained within `ParseContainer` and `ParseField` we can
 // Mod ...
 
 // Use ...
-
 
 // Code
 // ...
@@ -3180,7 +3135,6 @@ With with these new contents:
 // Mod ...
 
 // Use ...
-
 
 // Code
 // ...
@@ -3271,7 +3225,6 @@ I like to make one example per (major) feature and if possible, and use somethin
 //! ```
 // Use ...
 
-
 // Code
 // ...
 ```
@@ -3301,7 +3254,6 @@ Rename docs:
 //! ```
 //!
 // Use ...
-
 
 // Code
 // ...
@@ -3345,7 +3297,6 @@ Display docs:
 //! ```
 //!
 // Use ...
-
 
 // Code
 // ...
@@ -3410,7 +3361,6 @@ Custom function docs:
 //! re-arrange your struct to only have one field with a custom display.
 // Use ...
 
-
 // Code
 // ...
 ```
@@ -3420,21 +3370,21 @@ Custom function docs:
 $ cargo clippy
     Checking unicode-ident v1.0.18
     Checking strum v0.26.3
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-40366-zxny0g/cache_diff/cache_diff_derive)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-92030-93r2zd/cache_diff/cache_diff_derive)
     Checking proc-macro2 v1.0.94
     Checking quote v1.0.39
     Checking syn v2.0.99
-    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-40366-zxny0g/cache_diff/cache_diff)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.98s
+    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-92030-93r2zd/cache_diff/cache_diff)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.95s
 $ cargo test
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-40366-zxny0g/cache_diff/cache_diff_derive)
-   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-40366-zxny0g/cache_diff/cache_diff)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.67s
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-92030-93r2zd/cache_diff/cache_diff_derive)
+   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250304-92030-93r2zd/cache_diff/cache_diff)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.64s
      Running unittests src/lib.rs (target/debug/deps/cache_diff-7c1f428e3c9023d2)
 
 running 2 tests
-test tests::test_unchanged_metadata ... ok
 test tests::test_changed_metadata ... ok
+test tests::test_unchanged_metadata ... ok
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
@@ -3442,29 +3392,29 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 running 11 tests
 test parse_container::tests::test_known_attributes ... ok
-test parse_field::tests::test_known_attributes ... ok
 test parse_container::tests::test_parse_attribute ... ok
-test parse_field::tests::test_parse_attributes ... ok
-test parse_container::tests::test_all_ignored ... ok
-test parse_container::tests::test_custom_parse_attribute ... ok
-test parse_field::tests::test_parse_field_plain ... ok
 test parse_container::tests::test_no_fields ... ok
+test parse_container::tests::test_custom_parse_attribute ... ok
+test parse_field::tests::test_known_attributes ... ok
+test parse_container::tests::test_all_ignored ... ok
+test parse_field::tests::test_parse_attributes ... ok
+test parse_field::tests::test_parse_field_plain ... ok
+test parse_container::tests::test_parses ... ok
 test parse_field::tests::test_requires_named_struct ... ok
 test parse_field::tests::test_parse_rename_ignore_attribute ... ok
-test parse_container::tests::test_parses ... ok
 
 test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
    Doc-tests cache_diff
 
 running 5 tests
-test cache_diff/src/lib.rs - (line 29) ... ok
 test cache_diff/src/lib.rs - (line 101) ... ok
-test cache_diff/src/lib.rs - (line 48) ... ok
+test cache_diff/src/lib.rs - (line 29) ... ok
 test cache_diff/src/lib.rs - (line 8) ... ok
+test cache_diff/src/lib.rs - (line 48) ... ok
 test cache_diff/src/lib.rs - (line 72) ... ok
 
-test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.74s
 
    Doc-tests cache_diff_derive
 
@@ -3678,7 +3628,6 @@ $ cat cache_diff/src/lib.rs
 //! re-arrange your struct to only have one field with a custom display.
 #[cfg(feature = "derive")]
 pub use cache_diff_derive::CacheDiff;
-
 // Code
 pub trait CacheDiff {
     fn diff(&self, old: &Self) -> Vec<String>;
@@ -3756,7 +3705,6 @@ mod parse_container;
 use proc_macro::TokenStream;
 use parse_container::ParseContainer;
 use parse_field::ParseField;
-
 // Code
 pub(crate) const NAMESPACE: &str = "cache_diff";
 pub(crate) const MACRO_NAME: &str = "CacheDiff";
@@ -3829,7 +3777,6 @@ use syn::spanned::Spanned;
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 use crate::NAMESPACE;
-
 // Code
 /// Field (i.e. `name: String`) of a container (struct) and its parsed attributes
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
@@ -4067,7 +4014,6 @@ use crate::MACRO_NAME;
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 use crate::NAMESPACE;
-
 // Code
 /// Container (i.e. struct Metadata { ... }) and its parsed attributes
 /// i.e. `#[cache_diff( ... )]`

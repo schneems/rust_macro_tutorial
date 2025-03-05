@@ -19,7 +19,6 @@ RUST_FILE = ERB.new(<<-'FILE', nil, "<>")
 <% if !TEMPLATES[filename][:use].empty? %>
 <%= "// Use ...\n" if TEMPLATES[filename][:use] != use %>
 <%= use.join("\n") %>
-
 <% end %>
 <% if !TEMPLATES[filename][:code].empty? %>
 
