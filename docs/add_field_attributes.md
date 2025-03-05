@@ -1,4 +1,6 @@
-## Add field attributes
+
+<span id="chapter_08" />
+## Add attributes to ParseField
 
 Our macro will need both field and container attributes. You may recall, that our readme driven development left us with three things to customize on the field:
 
@@ -10,15 +12,21 @@ And one thing to customize on the container:
 
 - [Customize cache behavior for some fields without having to manually implement the trait for the rest. Container attribute: `cache_diff(custom = <code path>)`](hhttps://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#custom-logic-for-one-field-example)
 
-Initial prototyping suggested that it was useful for developers to list why a certain field was ignored, so beyond a simple boolean flag for ignore, I decided that `cache_diff(ignore = "Reason why field is ignored")` should also be valid. In the real code I'm special casing `ignore = "custom"` to trigger an additional check.
+Initial prototyping suggested that it was useful for developers to list why a certain field was ignored, so beyond a simple boolean flag for ignore, I decided that `cache_diff(ignore = "Reason why field is ignored")` should also be valid.
 
-Like before, we'll represent this state in code and fill out the rest of our program to be capable of generating that code. We will represent individual attributes as an enum, and use the [strum](https://crates.io/crates/strum) crate to make parsing and error generation easier:
+Like before, we'll represent this state in code and fill out the rest of our program to be capable of generating that code. We will represent individual attributes as an enum, and use the [strum](https://crates.io/crates/strum) crate to make parsing and error generation easier. Add that dependency now:
 
 ```
 :::>- $ cargo add strum@0.26 --package cache_diff_derive --features derive
 ```
 
-Now define the enum:
+The dependencies look like this:
+
+```
+:::>> $ cat cache_diff_derive/Cargo.toml
+```
+
+Now define an enum that will hold each of our attribute variants. Add this code:
 
 ```rust
 :::>> print.erb
@@ -46,9 +54,9 @@ append(filename: "cache_diff_derive/src/parse_field.rs", use: import, code: code
 %>
 ```
 
-In addition to enum variants such as `ParseAttribute::rename(...)`, the strum crate is creating a "discriminant" enum that has the same named variants, but without any inputs. We're telling strum to name this enum `KnownAttribute` and give it the ability to iterate over all its variants (`strum::EnumIter`), print the name of each variant (`strum::Display`), and generate a variant from a string (`strum::EnumString`).
+In addition to enum variants such as `ParseAttribute::rename(...)`, the strum crate is creating a "discriminant" enum that has the same named variants, but without any inputs. That means that `ParseAttribute::rename(...)` will have a corresponding `KnownAttribute::rename`. We're using `strum_discriminants` attribute to tell strum to name this "discriminant" enum `KnownAttribute` and give it the ability to iterate over all its variants (`strum::EnumIter`), print the name of each variant (`strum::Display`), and generate a variant from a string (`strum::EnumString`).
 
-We will implement the `syn::parse::Parse` trait to allow syn to parse a stream of tokens into our data structures. We'll start off with our `KnownAttribute` enum:
+We will implement the `syn::parse::Parse` trait to allow syn to parse a stream of tokens into our data structures. We'll start off with our `KnownAttribute` enum. Add this code:
 
 ```rust
 :::>> print.erb
@@ -74,7 +82,7 @@ CODE
 %>
 ```
 
-Here's how that translates to code:
+And add this test code:
 
 ```rust
 :::>> print.erb
@@ -101,7 +109,9 @@ CODE
 %>
 ```
 
-We can now parse individual keywords such as `rename` into a `KnownAttribute` enum. We can use this to generate an implementation of `syn::parse::Parse` for our `ParseAttribute` which uses a `<key> = <value>` structure:
+This test uses `syn::parse_str` to take in single keywords we defined such as "rename" and convert them into a `KnownAttribute` enum variant. The syn crate can do this because we implemented `syn::parse::Parse` on this `KnownAttribute` enum.
+
+We will use this capability to generate an implementation of `syn::parse::Parse` for our `ParseAttribute` to allow it to handle a `<key> = <value>` structure. Add this code:
 
 ```rust
 :::>> print.erb
@@ -146,7 +156,7 @@ input.parse::<syn::Token![=]>()?;
 
 > Protip: If the whole `syn::parse::ParseStream` isn't consumed in the body of a parse implementation, then it will error. This would prevent `KnownAttribute` from accidentally parsing an input like `rename = "true"` as it would match the first ident `rename` but wouldn't consume the rest. The error from syn when this happend isn't very intuititve, so if you are puzzling why your parse invocation fails, make sure you've consumed everything. You can use `eprintln` to debug.
 
-Once the equal sign is parsed, then we need to parse the value. A `syn::LitStr` will capture a string with quotes. So for an input of `rename = "Ruby VERSION"` the `syn::LitStr` will capture `"Ruby VERSION"`. We can extract a string from it by calling the `.value()` associated function:
+Once the equal sign is parsed, then we need to parse the value. A `syn::LitStr` will capture a string with quotes. For an input of `rename = "Ruby VERSION"` the `syn::LitStr` will capture `"Ruby VERSION"`. We can extract a string from a `syn::LitStr` by calling the `.value()` associated function:
 
 ```rust
 Ok(ParseAttribute::rename(
@@ -176,7 +186,7 @@ KnownAttribute::ignore => {
 }
 ```
 
-With all that in place, you can add a test and validate that we can parse it into our data structure:
+With all that in place, you can add a test and validate that we can parse it into our data structure. Add this code:
 
 ```rust
 :::>> print.erb
@@ -197,7 +207,9 @@ CODE
 %>
 ```
 
-So far, so good, but if you tried to parse multiple attributes then you'll get a failure, We need to be able to parse a comma deleniated set of attributes. And this is how I choose to implement that:
+So far, so good, but if you tried to parse multiple attributes like `rename = "ruby version", display = my_function` then you'll get a failure. Why? Because `ParseAttribute` only parses a single attribute at a time. It would consume `rename = "ruby version"` but leave `, display = my_function` untouched.
+
+To parse a comma separated set of attributes, add this code:
 
 ```rust
 :::>> print.erb
@@ -221,7 +233,7 @@ CODE
 %>
 ```
 
-Here's a quick test before I circle back and explain what's going on:
+And add this test for the behavior:
 
 ```rust
 :::>> print.erb
@@ -258,7 +270,7 @@ for attr in field
 }
 ```
 
-We use the [`syn::Attribute::parse_args_with`](https://docs.rs/syn/latest/syn/struct.Attribute.html#method.parse_args_with) function which takes a parser. We've implemented two parsers so far `KnownAttribute` and `ParseAttribute`. But we need something that can handle a comma separated set of attributes, so we turn to the pre-built `syn::punctuated::Punctuated` parser, which is actually a parser combinator, meaning it takes in other parsers as it's input. In our case we're telling it to build a set of `ParseAttribute` structs, and use commas to separate them. We then call `parse_terminated` on this parser combinator which returns an iterator of item type `ParseAttribute` that we can use to build and return our `Vec<ParseAttribute>`:
+We use the [`syn::Attribute::parse_args_with`](https://docs.rs/syn/latest/syn/struct.Attribute.html#method.parse_args_with) function which takes a parser. We've implemented two parsers so far: `KnownAttribute` and `ParseAttribute`. But we need something that can handle a comma separated set of attributes, so we turn to the pre-built `syn::punctuated::Punctuated` parser, which is actually a parser combinator, meaning it takes in other parsers as its input. In our case we're telling it to build a set of `ParseAttribute` structs, and use commas (`syn::Token![,]`) to separate them. We then call `parse_terminated` on this parser combinator which returns an iterator of item type `ParseAttribute` that we can use to build and return our `Vec<ParseAttribute>`:
 
 ```rust
 for attribute in attr.parse_args_with(
@@ -294,7 +306,11 @@ CODE
 %>
 ```
 
-We were already storing the ident and desired name of our field, but now we're also capturing if it was ignored or not as well as what function to use for it's display. Since this last value, `display`, isn't optional, we'll need to set it for every field. To help with this, there's a nifty utility function that returns whatever is passed to it we can use as a default [`std::convert::identity`](https://doc.rust-lang.org/std/convert/fn.identity.html). And while we're picking out sensible defaults, if we can detect that a type is a `std::path::PathBuf` then we can go ahead and default to `std::path::Path::display` since we know it does not implement `Display`. To help that detection, add a helper function:
+We were already storing the ident and desired name of our field, but now we're also capturing if it was ignored or not as well as what function to use for it's display.
+
+Since this last field, `display`, isn't optional, we'll need to set it for every `ParseField`. But how can we do that since `display` is an optional attribute? To help with this, there's a nifty utility function [`std::convert::identity`](https://doc.rust-lang.org/std/convert/fn.identity.html), that returns whatever is passed to it, we can use as a default. And while we're picking out sensible defaults, if we can detect that a type is a `std::path::PathBuf` then we can go ahead and default to `std::path::PathBuf::display` since we know paths do not implement `Display` by default.
+
+Add this helper function now:
 
 ```rust
 :::>> print.erb
@@ -311,10 +327,9 @@ CODE
 %>
 ```
 
-This code takes in a `syn::Type`, checks if it's a path to a type and if it is and matches `PathBuf` then it returns true. Perhaps there's a more robust way to do check, if you know one...let me know.
+This code takes in a `syn::Type`, checks if it's a path to a type and if it is and matches `PathBuf` then it returns true. Perhaps there's a more robust way to do check, if you know one...let me know. With that helper code in place we can now extract values to build our new `ParseField`.
 
-With that helper code in place we can now extract values to build our new `ParseField`. Replace this code:
-
+Replace this code:
 
 ```rust
 :::-> print.erb
@@ -376,7 +391,7 @@ CODE
 %>
 ```
 
-The code starts off in a similar fashion, but then diverges by building a Vec of `ParseAttributes` that we can iterate through. An eagle-eyed reader might notice that there's nothing preventing two or three attribute declarations via our user like:
+The code sets `ident` and `name` like before, but then diverges by building a Vec of `ParseAttributes` that we can iterate through. An eagle-eyed reader might notice that there's nothing preventing two or three attribute declarations via our user like:
 
 ```rust
 struct Metadata {
@@ -399,10 +414,9 @@ It might seem like we added a lot of code, but most of this boils down to:
 - Add any new fields needed to your `ParseField` struct
 - Adjust your building functions to use the new attribute information collected.
 
-Sometimes it's easier to  go the other way, by defining the fields you need to for `ParseField` and then figuring out the API you want to make to support it, but from a testing perspective, it's easier to start with smaller parsers and gradually combine them to build bigger ones.
+Sometimes it's easier to go the other direction. By defining the fields you need to for `ParseField` and then figuring out the API you want to make to support it, but from a testing perspective, it's easier to start with smaller parsers and gradually combine them to build bigger ones.
 
-
-Verify tests are all passing:
+We're done with the field modifications. Verify tests are all passing:
 
 ```
 :::>- $ cargo test
@@ -425,5 +439,5 @@ If your project is failing or if the tests you added didn't run, here's the full
 ```
 </details>
 
-We're done with the field modifications. We need to adjust our container code to add a container attribute, and then our final `lib.rs` code needs to use all this tasty info we just added.
+We need to adjust our container code to add a container attribute, and then our final `lib.rs` code needs to use all this tasty info we just added.
 

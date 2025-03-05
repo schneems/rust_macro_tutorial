@@ -1,7 +1,9 @@
-## Add a container attribute
 
+<span id="chapter_09" />
 
-Like we did with fields, we'll define an enum to hold each container attribute variant.
+## Add attributes to ParseContainer
+
+Like we did with fields, we'll define an enum to hold each container attribute variant. Add this code:
 
 ```rust
 :::>> print.erb
@@ -51,8 +53,7 @@ CODE
 %>
 ```
 
-The turning an input into a vector of parsed attributes looks pretty similar as well:
-
+Then, turning an input into a vector of parsed attributes looks pretty similar as well:
 
 ```rust
 :::>> print.erb
@@ -76,7 +77,7 @@ CODE
 %>
 ```
 
-The actual parse code is slightly different, but it should seem like a familiar pattern:
+Now implement the parsing logic. Add this code:
 
 ```rust
 :::>> print.erb
@@ -94,7 +95,7 @@ CODE
 %>
 ```
 
-Verify your intuition (and my claims) with some tests:
+Verify your intuition (and my claims) with some tests. Add this test code:
 
 ```rust
 :::>> print.erb
@@ -144,8 +145,7 @@ Verify they work:
 :::>- $ cargo test
 ```
 
-Now let's wire it up. Start of by adding a place to store our attribute on the container. Replace this code:
-
+Now we can parse attributes for containers let's add that information to our container struct. Replace this code:
 
 ```rust
 :::-> print.erb
@@ -168,7 +168,7 @@ CODE
 %>
 ```
 
-Then update the logic for building the container. Replace this code:
+Now, update the logic for building the container. Replace this code:
 
 ```rust
 :::-> print.erb
@@ -258,8 +258,9 @@ if let Some(field) = fields
 }
 ```
 
-Previously when I added the ability to set a field as ignored with a reason, it gave us the ability to add a preference signal that did something meaningful. In this case we are saying that if the user adds a `#[cache_diff(ignore = "custom")]` to one of their fields, they MUST also add a `#[cache_diff(custom = <function>)]` to the container. Because proc macros make it faster for the end user to generate and manipulate code, it makes it faster for them to make mistakes too. You could imagaine a scenario where they're playing around with configuration options and they accidentally delete the container attribute line, and it's not caught in code review and the linter isn't loud enough, so they deploy with code that looks correct but isn't. The nice thing about adding this error here, is that when the user tries to compile their code with invalid state, it's not representable and they get a clear error explaining what went wrong and how to fix it. Coming from (such a flexible and dynamic language as) Ruby, these defensive codeing practices are second nature to me. [A talk by Avdii back from 2011 comes to mind](https://www.youtube.com/watch?v=t8s2MqnDPD8). You don't need to pre-think every possible thing a coder can do wrong with your library, but it's worth both thinking about it ahead of your first proc-macro release, as well as being on the lookout for examples of incorrect usage from other devs and from your own code and notes.
+Previously when I added the ability to set a field as ignored with a reason, it gave us the ability to add a preference signal that did something meaningful. In this case we are saying that if the user adds a `#[cache_diff(ignore = "custom")]` to one of their fields, they MUST also add a `#[cache_diff(custom = <function>)]` to the container. Because proc macros make it faster for the end user to generate and manipulate code, it makes it faster for them to make mistakes too. You could imagaine a scenario where they're playing around with configuration options and they accidentally delete the container attribute line, and it's not caught in code review and the linter isn't loud enough, so they deploy with code that looks correct but isn't.
 
+The nice thing about adding this error here, is that when the user tries to compile their code with invalid state, it's not representable and they get a clear error explaining what went wrong and how to fix it. Coming from (such a flexible and dynamic language as) Ruby, these defensive codeing practices are second nature to me. [A talk by Avdii back from 2011 comes to mind as having some good examples](https://www.youtube.com/watch?v=t8s2MqnDPD8). You don't need to pre-think every possible thing a coder can do wrong with your library, but it's worth both spending a moment or two thinking of failure modes ahead of your first proc-macro release. Once you've released your macro make sure to be on the lookout for examples of incorrect usage from other devs and from your own code and notes.
 
 The other error is here:
 
@@ -277,7 +278,7 @@ if fields.iter().any(|f| f.ignore.is_none()) {
 
 If someone tries to use the macro on an empty struct or accidentally ignores all the fields, then I don't want the derive code to compile. If someone has a legitimate use for a type that is `impl CacheDiff` but always returns an empty difference set, that's fine...but I won't help them construct such an abomination (i.e. I'm not blocking them from implementing it manually, only blocking it via a derive macro). Whenever I write reflection code, I like to have a strong sense of what code paths should be encouraged, which should be allowable but discouraged, and which should be impossible. I also believe that many programmers have more smarts than empathy and thanks to Turing completeness, that means statements like "I cannot imagine a reason why anyone would want to X," may be due to lack of imagination, rather than a lack of a good reason for doing that thing.
 
-Taking these two errors out doesn't change much, but I consider the error experience, how our interfaces behave in failure scenarios, to be a true test of quality software design. Even better design, allows us to assert those failure scenarios via tests:
+I consider the error experience, how our interfaces behave in failure scenarios, to be a true test of quality software design. Even better design, allows us to assert those failure scenarios via tests. Add the testing code now:
 
 ```rust
 :::>> print.erb
@@ -312,4 +313,4 @@ CODE
 %>
 ```
 
-With all of this in place, it's time to put a ribbon on it and tie it all together. In the next section we'll use our newly defined field and container attributes in the proc macro output.
+With all of this in place, it's time to Derive to the finish line. In the next section we'll use our newly defined field and container attributes in the proc macro output.

@@ -1,7 +1,8 @@
-## Container + Fields == Happy Derive Macro
+<span id="chapter_06"/>
 
+## Implement the basic Derive macro
 
-Import the structs we created:
+We will now use these container and field structs that we created to implement our base logic. Import the structs we created:
 
 ```rust
 :::>> print.erb
@@ -77,7 +78,7 @@ We will need the identity of the container (i.e. `Metadata`) for code generation
 :::-> $ grep -A1000 'Ok(quote::quote! {' cache_diff_derive/src/lib.rs | awk '/})/ {print; exit} {print}'
 ```
 
-In the above code, variables can be substituted inorder to generate code by leading them with a pound. For example, `#struct_identifier` will be replaced with ident from the `let struct_identifier` variable. The `#(#comparisons)*` code expands the `let comparisons` variable which contains a `Vec<proc_macro2::TokenStream>` which is generated via the `quote::quote!` macro (which we'll look into in a minute). You can read more about [this syntax in the quote docs](https://docs.rs/quote/1.0.38/quote/macro.quote.html#interpolation). The `#()*` syntax handles repetition since the variable is a Vec. From the quote docs:
+In the above code, variables can be substituted in order to generate code by starting with a pound (`#`). For example, `#struct_identifier` will be replaced with ident from the `let struct_identifier` variable. The `#(#comparisons)*` code expands the `let comparisons` variable which contains a `Vec<proc_macro2::TokenStream>` which is generated via the `quote::quote!` macro (which we'll look into in a minute). You can read more about [this syntax in the quote docs](https://docs.rs/quote/1.0.38/quote/macro.quote.html#interpolation). From the quote docs:
 
 > Repetition is done using #(...)* or #(...),* again similar to macro_rules!. This iterates through the elements of any variable interpolated within the repetition and inserts a copy of the repetition body for each one. The variables in an interpolation may be a Vec, slice, BTreeSet, or any Iterator.
 
@@ -89,7 +90,9 @@ We skipped ahead of how we generated those comparisons. Let's go back and look a
 
 In this code we're looping through all of the fields and pulling out the identifier (i.e. `version` for `version: String`), as well as the un-underscored name. Like we saw with the struct identifier, we will use the `quote::quote!` macro and the inner variables `ident` and `name` to check if the current value does not equal the old value, and if that happens then format that information and add it to the vec.
 
-Unfortunately we cannot test the derive macro invocation in the same crate, because the macro must be compiled first. However, we can test it in our original crate. Let's add a test to verify it works. We can use Rust's doctests to validate the happy path. At the top of `cache_diff/src/lib.rs` add module docs with a doctest that uses our derive macro:
+Unfortunately we cannot test the derive macro invocation in the same crate, because the macro must be compiled first. However, we can test it in our original crate.
+
+We can use Rust's doctests to validate the happy path. At the top of `cache_diff/src/lib.rs` add module docs with a doctest that uses our derive macro:
 
 ```rust
 :::>> print.erb
@@ -135,6 +138,8 @@ Now verify it all works:
 :::>- $ cargo test
 ```
 
+Congrats! You just wrote a derive macro! But we're not done yet. Let's add some logic for parsing attributes to let users configure behavior without needing to manually implement the trait.
+
 If your project is failing or if the tests you added didn't run, here's the full project for reference:
 
 <details>
@@ -152,5 +157,5 @@ If your project is failing or if the tests you added didn't run, here's the full
 ```
 </details>
 
-Congrats! You just wrote a derive macro! But we're not done yet. Let's add some logic for parsing attributes to let users configure behavior without needing to manually implement the trait.
 
+Now, that we have the base functionality in place, let's look a little bit a derive macro attributes so we can make our trait Derive easy to customize.

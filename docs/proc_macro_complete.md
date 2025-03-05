@@ -1,4 +1,7 @@
-## Proc, meet macro (with attributes)
+
+<span id="chapter_10" />
+
+## Implement the full Derive macro (customizable with attributes)
 
 With the parsing logic contained within `ParseContainer` and `ParseField` we can focus on implementing the core logic of our macro. Replace this code:
 
@@ -49,7 +52,7 @@ fn create_cache_diff(item: proc_macro2::TokenStream) -> syn::Result<proc_macro2:
     }
 
     Ok(quote::quote! {
-        impl cache_diff::CacheDiff for #ident {
+        impl ::cache_diff::CacheDiff for #ident {
             fn diff(&self, old: &Self) -> ::std::vec::Vec<String> {
                 let mut differences = ::std::vec::Vec::new();
                 #custom_diff
@@ -67,7 +70,9 @@ One thing to call out here is that I'm using `::std::vec::Vec<String>` this is b
 
 The logic inside of the function is similar to what we saw before. Pull out values from parsed token stream using `syn`. And those values to generate rust code with `quote`. Like before, we're going to write some doctests that use our features like a user would. Beyond convincing you that the code we wrote works, this documentation will be easy to find for anyone using the macro.
 
-I like to make one example per (major) feature and if possible, and use something that's as close to the real-world reason why I added the feature to demonstrate it. I wrote a [book on contributing to open source](http://howtoopensource.dev/), and in the documentation chapter where we document code someone else wrote, I stressed that documentation should help answer the question "why does this (feature) exist." It's better to have docs that say how to florp a floobinator (humerous nonsense), but if the developer reading it has no idea what that means, they won't retain the information for when they need it. Here's the ignore docs:
+I like to make one example per (major) feature. And, if possible, use something that's close to the real-world reason why I added the feature. In my [book on contributing to open source](http://howtoopensource.dev/), there is a  documentation chapter where we document code someone else wrote, I stressed that documentation should help answer the question "why does this (feature) exist." Great documentation doesn't just say why the code exists, it shows it.
+
+Add docs for `ignore` now:
 
 ```rust
 :::>> print.erb
@@ -95,7 +100,7 @@ CODE
 %>
 ```
 
-Rename docs:
+Add rename docs:
 
 ```rust
 :::>> print.erb
@@ -122,7 +127,7 @@ CODE
 %>
 ```
 
-Display docs:
+Add display docs:
 
 ```rust
 :::>> print.erb
@@ -162,7 +167,7 @@ CODE
 %>
 ```
 
-Custom function docs:
+Add custom function docs:
 
 ```rust
 :::>> print.erb
@@ -218,9 +223,12 @@ Custom function docs:
 //! you only wanted to have one output for a combined `os_distribution` and `os_version` in one output
 //! like "OS (ubuntu-22 to ubuntu-24)". Alternatively, you can use <https://github.com/schneems/magic_migrate> to
 //! re-arrange your struct to only have one field with a custom display.
+//!
 CODE
 %>
 ```
+
+And make sure it works as expected:
 
 ```
 :::>> $ cargo clippy
@@ -243,3 +251,6 @@ If your project is failing or if the tests you added didn't run, here's the full
 :::>> $ cat cache_diff_derive/src/parse_container.rs
 ```
 </details>
+
+
+If your code compiles, then congradulations, you just earned your Derive-ing license!

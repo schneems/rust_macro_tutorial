@@ -1,8 +1,8 @@
-## Proc, meet macro
+<span id="chapter_03" />
 
-> Skip this section if: You know how to start a proc macro project and are somehow not aware that you're reading a proc macro tutorial.
+## Create an empty Proc Macro
 
-To write a proc macro we will need some crates. It's easier to see what they do as we use them.
+To write a proc macro we will need some crates. Add them now:
 
 ```toml
 :::>> file.append cache_diff_derive/Cargo.toml
@@ -13,7 +13,7 @@ syn = { version = "2.0.83", features = ["extra-traits"] }
 proc-macro2 = "1.0.89"
 ```
 
-We also need to tell rust that this library is a proc macro.
+I'll talk about what these do as we use them. We also need to tell rust that this library is a proc macro.
 
 ```toml
 :::>> file.append cache_diff_derive/Cargo.toml
@@ -21,7 +21,7 @@ We also need to tell rust that this library is a proc macro.
 proc-macro = true
 ```
 
-Now we need to add an entrypoint and define some constants we'll use in a bit:
+Now we need to add an entrypoint and define some constants we'll use in a bit. Add this code:
 
 ```rust
 :::>> print.erb
@@ -51,13 +51,13 @@ EOF
 %>
 ```
 
-This creates a function `cache_diff` that is annotated with a proc macro (how meta):
+What does this code do? We just created a function `cache_diff` that is annotated with a proc macro (how meta):
 
 ```rust
 :::-> $ grep 'proc_macro_derive' cache_diff_derive/src/lib.rs
 ```
 
-This line says that we provide a derive macro named `CacheDiff` and that it should accept some attributes that start with `#[cache_diff()]`. Originally I thought that meant it would only show me the attributes I was interested in, but it doesn't. If the struct has different attributes from different crates (remember `serde`?) then we can see them, we need to manually filter attributes so we only see the ones we care about.
+This line says that we provide a derive macro named `CacheDiff` and that it should accept some attributes that start with `#[cache_diff()]`. Originally I thought that meant it would only show me the attributes I was interested in (i.e. prefixed with `cache_diff`), but it doesn't, the proc macro sees all attributes in the source code. If the struct has different attributes from different crates (such as `serde`) then it can see them, we need to manually filter attributes later so we only see the ones we care about.
 
 The next bit defines a function `cache_diff` that will receive a `proc_macro::TokenStream` containing information about the code we're annotating:
 
@@ -65,13 +65,13 @@ The next bit defines a function `cache_diff` that will receive a `proc_macro::To
 :::-> $ grep -A1000 'pub fn cache_diff' cache_diff_derive/src/lib.rs | awk '/^}/ {print; exit} {print}'
 ```
 
-It calls a function `create_cache_diff` which returns a `syn::Result<proc_macro2::TokenStream>>`. That's effectively either a parse error or a stream of tokens. In the event of an error we want to map it into a pretty compile error with source code highlighting where the problem happend that Rust users know and love. Inside of the `create_cache_diff` function I added a call to the `quote::quote!` macro:
+It calls a function `create_cache_diff` which returns a `syn::Result<proc_macro2::TokenStream>>`. That's either a parse error or a stream of tokens. In the event of a problem, we want to map it into a pretty compile error with source code highlighting where the issue happend with underlines and arrows and all that nice output that Rust users know and love. Inside of the `create_cache_diff` function I added a call to the `quote::quote!` macro:
 
 ```rust
 :::-> $ grep -A1000 'fn create_cache_diff' cache_diff_derive/src/lib.rs | awk '/^}/ {print; exit} {print}'
 ```
 
-This macro takes converts text into rust code, we can also pass in variables, but for now we just want the code to compile:
+This macro takes converts text into rust code, we can also pass in variables, but for now we just want the code to compile. Verify your code builds:
 
 ```term
 :::>- $ cargo build
@@ -106,4 +106,3 @@ The file should look like this:
 ```
 
 With this skeleton in place, we will define structs to hold data, this will allow us to implement the base behavior and gradually add on custom attributes.
-

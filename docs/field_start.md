@@ -1,8 +1,18 @@
-## Define a Field
+<span id="chapter_04" />
 
-> Skip this if you don't want your code to compile
+## Create a ParseField to Derive with
 
-You may recall that a field in our context refers to a name and type within a struct. We need a way to model this in our code so we can add onto it later:
+Many aspiring drivers learn in an empty parking lot. We'll start Deriving for real with an empty field.
+
+A field in our context refers to a name and type within a struct. For example:
+
+```rust
+struct Metadata {
+    version: String
+}
+```
+
+This struct has one field named `version` with a value of `String` type. We need a way to model this concept in our code so we can add onto it later. Create this file and add this code now:
 
 ```rust
 :::>> print.erb
@@ -22,16 +32,18 @@ CODE
 %>
 ```
 
-The interesting bits here is that the `ident` field holds a `syn::Ident` which is shorthand for an "identifier" of Rust code, we'll use this when we want to compare one field value to another so `old.version != new.version` would become `old.#ident != new.#ident`. Then we store the name of the field we want to show when a difference is detected. We want it to look nice, so instead of showing a string like `"ruby_version"` we'll convert it to `"ruby version"` (with a space instead of an underscore). This isn't strictly required at this point, but we're laying a foundation to build on.
+The `ident` field on `ParseField` holds a `syn::Ident` which is shorthand for an "identifier" of Rust code, we'll use this when we want to compare one field value to another so `old.version != new.version` would become `old.#ident != new.#ident`. The [syn crate](https://crates.io/crates/syn) ships with many [pre-defined data structures that represent various Rust code](https://docs.rs/syn/2.0.99/syn/#structs) that we can easilly parse a `TokenStream` into.
 
-To use this code we've got to `mod` it from the `lib.rs`
+Then we store the `name` of the field we want to show when a difference is detected. We want it to look nice, so instead of showing a string like `"ruby_version"` we'll convert it to `"ruby version"` (with a space instead of an underscore). This isn't strictly required at this point, but we're laying a foundation to build on.
+
+To use this code we've got to `mod` it from the `lib.rs`. Do that now:
 
 ```rust
 :::>> print.erb
 <%= append(filename: "cache_diff_derive/src/lib.rs", mod: "mod parse_field;") %>
 ```
 
-Now that we've got somewhere to put data, we need some logic:
+Now that we've got somewhere to put data, we need some logic to build it. Add this code:
 
 ```rust
 :::>> print.erb
@@ -68,15 +80,15 @@ The function we added takes in a `syn::Field`, a parsing abstraction over a stru
 :::-> $ grep -A1000 'pub(crate) fn from_field' cache_diff_derive/src/parse_field.rs | awk '/{/ {print; exit} {print}'
 ```
 
-Syn provides a number of these abstractions out of the box, you can find a list at TODO.
-
 This next bit of code pulls out the identity of the field if there is one, or returns `syn::Error` one isn't provided:
 
 ```rust
 :::-> $ grep -A1000 'let ident' cache_diff_derive/src/parse_field.rs | awk '/\;/ {print; exit} {print}'
 ```
 
-As the error message suggests, this might be `None` if someone tried to use our derive macro on something that has a field without an ident like a tuple struct (i.e. `struct Metadata(String)`). The first argument of the error takes in a `Span`. This is a common parsing abstraction, it represents a sequence of characters in our input. The `syn` crate uses this information to make nice error messages with references to our code that Rust developers have come to expect. To get the span from the field input we have to import the `Spanned` trait.
+As the error message suggests, this might be `None` if someone tried to use our derive macro on something that has a field without an ident like a tuple struct (i.e. `struct Metadata(String)`). The first argument of the error takes in a `syn::Span`. A span is a common parsing abstraction not unique to syn or Rust, it represents a sequence of characters in our input. The `syn` crate uses this information to add underlines and arrows that Rust developers have come to expect. To use the span from the field input we have to import the `syn::spanned::Spanned` trait.
+
+You can also panic in a macro, but part of being a great Deriver is about going above and beyond to signal intent and help others.
 
 From there we gather the string representation of our identity, and replace underscores with spaces:
 
@@ -84,7 +96,7 @@ From there we gather the string representation of our identity, and replace unde
 :::-> $ grep -A1000 'let name' cache_diff_derive/src/parse_field.rs | awk '/\;/ {print; exit} {print}'
 ```
 
-But don't take my word for it, let's see the code in action:
+That's how the code works, but don't take my word for it, let's see the code in action. Add a test:
 
 ```rust
 :::>> print.erb
@@ -103,9 +115,9 @@ CODE
 %>
 ```
 
-This code uses `syn::parse_quote!` macro to generate a `syn::Field` that we can use to pass to the associated function we just defined. We have to annotate the type in the test or syn won't know what data structure we're trying to represent in our code. From there it asserts our naming logic works as expected.
+This test code uses `syn::parse_quote!` macro to generate a `syn::Field` that we can use to pass to the associated function we just defined. We have to annotate the type in the test or syn won't know what data structure we're trying to represent in our code. From there it asserts our naming logic works as expected.
 
-Happy paths are nice and all, but what about that error from earlier?
+Happy paths are nice and all, but what about that error from earlier? Add a test now:
 
 ```rust
 :::>> print.erb
@@ -125,7 +137,7 @@ CODE
 %>
 ```
 
-> Protip: To assert the full output, you could use the [trybuild crate]().
+> Protip: To assert the full output, you could use the [trybuild crate](https://docs.rs/trybuild/latest/trybuild/).
 
 This is our code so far:
 
@@ -139,4 +151,4 @@ Run tests to make sure everything works as expected:
 :::>- $ cargo test
 ```
 
-Now that we have a representation for a field, let's model our container.
+Now that we have a field for Deriving, let's model our container.
