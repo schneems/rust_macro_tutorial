@@ -138,11 +138,10 @@ CODE
 %>
 ```
 
-Verify they work, and now you shouldn't see any warnings:
+Verify they work:
 
 ```
-:::>> $ cargo test
-:::-- $ cargo clippy
+:::>- $ cargo test
 ```
 
 Now let's wire it up. Start of by adding a place to store our attribute on the container. Replace this code:
