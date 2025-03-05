@@ -1,6 +1,6 @@
 ## Proc, meet macro (with attributes)
 
-With the parsing logic contained within `ParseContainer` and `ParseField` we can focus on implementing the core logic of our macro. Here's the final version:
+With the parsing logic contained within `ParseContainer` and `ParseField` we can focus on implementing the core logic of our macro. Replace this code:
 
 ```rust
 :::-> print.erb

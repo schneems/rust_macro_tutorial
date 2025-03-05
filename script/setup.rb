@@ -69,20 +69,21 @@ end
 def replace_one(filename: , key: , match: , value: , between_text: )
   index = TEMPLATES[filename][key].find_index { |entry| entry.match?(match) }
   raise "No match for /#{match}/ in {}, expected to replace with:\n#{value}" unless index
-  result = String.new
+  result = []
   result << "```rust"
   hash = {}
   hash[key] = TEMPLATES[filename][key][index]
   result << render_rust(filename: filename, **hash)
   result << "```"
-  result << "\n\n"
+  result << ""
   TEMPLATES[filename][key][index] = value
   result << between_text
   result << "```rust"
   hash = {}
   hash[key] = value
   result << render_rust(filename: filename, **hash)
-  result << "```\n"
+  result << "```"
+  result.join("\n")
 end
 
 def replace(

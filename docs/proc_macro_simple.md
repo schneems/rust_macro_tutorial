@@ -12,7 +12,7 @@ Import the structs we created:
 
 Replace our prior cache logic:
 
-```
+```rust
 :::-> print.erb
 <%=
 replace(filename: "cache_diff_derive/src/lib.rs", match: /fn create_cache_diff/,  code: <<-CODE)

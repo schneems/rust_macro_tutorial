@@ -4,7 +4,7 @@
 Like we did with fields, we'll define an enum to hold each container attribute variant.
 
 ```rust
-:::-> print.erb
+:::>> print.erb
 <%
 import = ["use std::str::FromStr;"];
 import << "use strum::IntoEnumIterator;"
@@ -29,7 +29,7 @@ We will go ahead and add an implementation of `syn::parse::Parse` for `KnownAttr
 
 ```rust
 :::>> print.erb
-<%= append(filename: "cache_diff_derive/src/parse_container.rs", code: <<-CODE)
+<%= append(filename: "cache_diff_derive/src/parse_container.rs", use: "use crate::NAMESPACE;", code: <<-CODE)
 impl syn::parse::Parse for KnownAttribute {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let identity: syn::Ident = input.parse()?;
@@ -145,7 +145,7 @@ Verify they work, and now you shouldn't see any warnings:
 :::-- $ cargo clippy
 ```
 
-Now let's wire it up. Start of by adding a place to store our attribute on the container.
+Now let's wire it up. Start of by adding a place to store our attribute on the container. Replace this code:
 
 
 ```rust
@@ -169,7 +169,7 @@ CODE
 %>
 ```
 
-Then update the logic for building the container:
+Then update the logic for building the container. Replace this code:
 
 ```rust
 :::-> print.erb

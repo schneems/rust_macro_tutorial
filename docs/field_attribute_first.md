@@ -21,7 +21,7 @@ Like before, we'll represent this state in code and fill out the rest of our pro
 Now define the enum:
 
 ```rust
-:::-> print.erb
+:::>> print.erb
 <%
 import = ["use std::str::FromStr;"];
 import << "use strum::IntoEnumIterator;"
@@ -268,7 +268,7 @@ for attribute in attr.parse_args_with(
 }
 ```
 
-At this point we've added the ability to extract any cache_diff attributes from a `syn::Field` as a `Vec<ParseAttribute>`, but so far, nothing uses `ParseAttribute` outside of this module. We need to take this information and put it into a `ParseField` to make it useful.
+At this point we've added the ability to extract any cache_diff attributes from a `syn::Field` as a `Vec<ParseAttribute>`, but so far, nothing uses `ParseAttribute` outside of this module. We need to take this information and put it into a `ParseField` to make it useful. Replace this code:
 
 ```rust
 :::-> print.erb
@@ -313,7 +313,7 @@ CODE
 
 This code takes in a `syn::Type`, checks if it's a path to a type and if it is and matches `PathBuf` then it returns true. Perhaps there's a more robust way to do check, if you know one...let me know.
 
-With that helper code in place we can now extract values to build our new `ParseField`:
+With that helper code in place we can now extract values to build our new `ParseField`. Replace this code:
 
 
 ```rust
@@ -405,7 +405,7 @@ Sometimes it's easier to  go the other way, by defining the fields you need to f
 Verify tests are all passing:
 
 ```
-:::>> $ cargo test
+:::>- $ cargo test
 ```
 
 If your project is failing or if the tests you added didn't run, here's the full project for reference:

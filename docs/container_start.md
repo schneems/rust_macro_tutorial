@@ -8,7 +8,6 @@ If you didn't skip over it, you may remember that a container in proc-macro land
 :::>> print.erb
 <%
 import = ["use crate::parse_field::ParseField;"]
-import << "use crate::NAMESPACE;"
 %>
 
 <%= append(filename: "cache_diff_derive/src/parse_container.rs", use: import, code: <<-CODE)
