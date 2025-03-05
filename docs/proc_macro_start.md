@@ -90,11 +90,13 @@ default = ["derive"]
 
 This declares a dependency on our derive macro, it's optional because...why not. Some people might want to rely on the trait and manually implement it without the overhead of pulling in the derive macro. But I'm making the assumption that people want to use it by default.
 
-Now we re-export that macro right next to our trait:
+Now we re-export that macro right next to our trait, (but only if the "derive" feature is enabled, which it is by default):
 
 ```rust
 :::>> print.erb
-<%= append(filename: "cache_diff/src/lib.rs", use: "pub use cache_diff_derive::CacheDiff;") %>
+<%= append(
+    filename: "cache_diff/src/lib.rs",
+    use: ['#[cfg(feature = "derive")]', "pub use cache_diff_derive::CacheDiff;"]) %>
 ```
 
 The file should look like this:
