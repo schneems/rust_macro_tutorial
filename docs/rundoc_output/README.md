@@ -331,14 +331,14 @@ And when you run tests, it should look a little like this:
 
 ```
 $ cargo test
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250305-34552-d4ytd3/cache_diff/cache_diff_derive)
-   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250305-34552-d4ytd3/cache_diff/cache_diff)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250310-79242-2jez4r/cache_diff/cache_diff)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250310-79242-2jez4r/cache_diff/cache_diff_derive)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.25s
      Running unittests src/lib.rs (target/debug/deps/cache_diff-2716017b25caff21)
 
 running 2 tests
-test tests::test_changed_metadata ... ok
 test tests::test_unchanged_metadata ... ok
+test tests::test_changed_metadata ... ok
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
@@ -1624,7 +1624,7 @@ fn main() {
 Then it will produce this error:
 
 ```
-   Compiling lol v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250305-34552-d4ytd3/lol)
+   Compiling lol v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250310-79242-2jez4r/lol)
 error[E0277]: `PathBuf` doesn't implement `std::fmt::Display`
  --> src/main.rs:4:5
   |
@@ -3466,37 +3466,37 @@ And make sure it works as expected:
 $ cargo clippy
     Checking unicode-ident v1.0.18
     Checking strum v0.26.3
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250305-34552-d4ytd3/cache_diff/cache_diff_derive)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250310-79242-2jez4r/cache_diff/cache_diff_derive)
     Checking proc-macro2 v1.0.94
     Checking quote v1.0.39
-    Checking syn v2.0.99
-    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250305-34552-d4ytd3/cache_diff/cache_diff)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.22s
+    Checking syn v2.0.100
+    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250310-79242-2jez4r/cache_diff/cache_diff)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.98s
 $ cargo test
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250305-34552-d4ytd3/cache_diff/cache_diff_derive)
-   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250305-34552-d4ytd3/cache_diff/cache_diff)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.71s
-     Running unittests src/lib.rs (target/debug/deps/cache_diff-7c1f428e3c9023d2)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250310-79242-2jez4r/cache_diff/cache_diff_derive)
+   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250310-79242-2jez4r/cache_diff/cache_diff)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.70s
+     Running unittests src/lib.rs (target/debug/deps/cache_diff-a87fc54886a63ed0)
 
 running 2 tests
-test tests::test_unchanged_metadata ... ok
 test tests::test_changed_metadata ... ok
+test tests::test_unchanged_metadata ... ok
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-     Running unittests src/lib.rs (target/debug/deps/cache_diff_derive-ca382734a8ccd4f5)
+     Running unittests src/lib.rs (target/debug/deps/cache_diff_derive-db02941d6b15a6ad)
 
 running 11 tests
 test parse_container::tests::test_known_attributes ... ok
-test parse_container::tests::test_no_fields ... ok
-test parse_container::tests::test_all_ignored ... ok
-test parse_container::tests::test_parse_attribute ... ok
-test parse_field::tests::test_parse_rename_ignore_attribute ... ok
-test parse_container::tests::test_custom_parse_attribute ... ok
-test parse_field::tests::test_parse_field_plain ... ok
-test parse_field::tests::test_parse_attributes ... ok
-test parse_field::tests::test_requires_named_struct ... ok
 test parse_field::tests::test_known_attributes ... ok
+test parse_field::tests::test_requires_named_struct ... ok
+test parse_container::tests::test_no_fields ... ok
+test parse_field::tests::test_parse_attributes ... ok
+test parse_field::tests::test_parse_rename_ignore_attribute ... ok
+test parse_field::tests::test_parse_field_plain ... ok
+test parse_container::tests::test_custom_parse_attribute ... ok
+test parse_container::tests::test_parse_attribute ... ok
+test parse_container::tests::test_all_ignored ... ok
 test parse_container::tests::test_parses ... ok
 
 test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
@@ -3507,10 +3507,10 @@ running 5 tests
 test cache_diff/src/lib.rs - (line 101) ... ok
 test cache_diff/src/lib.rs - (line 29) ... ok
 test cache_diff/src/lib.rs - (line 8) ... ok
-test cache_diff/src/lib.rs - (line 72) ... ok
 test cache_diff/src/lib.rs - (line 48) ... ok
+test cache_diff/src/lib.rs - (line 72) ... ok
 
-test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.74s
 
    Doc-tests cache_diff_derive
 

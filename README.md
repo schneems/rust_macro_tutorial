@@ -11,5 +11,5 @@ $ bundle install
 ## Run
 
 ```
-$ rundoc docs/RUNDOC.md
+$ rundoc docs/RUNDOC.md --with-contents ./script
 ```
