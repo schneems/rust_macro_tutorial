@@ -36,7 +36,7 @@ CODE
 %>
 ```
 
-Like before, we're holding a reference to `syn::Ident` which holds the identity of the struct (i.e. `Metadata`). Then, instead of holding a `syn` data type for fields, we're holding a `Vec` of our the `ParseField` struct we defined previously.
+Like before, we're holding a reference to `syn::Ident` which holds the identity of the struct (i.e. `Metadata`). Then, we're also capturing the `syn::Generics` which holds information needed to support things like structs with generics or where clauses. Then instead of holding a `syn` data type for fields, we're holding a `Vec` of our the `ParseField` struct we defined previously.
 
 Don't forget to let our project know about the new file by adding a `mod` declaration. Add it now:
 

@@ -79,7 +79,7 @@ We will need the identity of the container (i.e. `Metadata`) for code generation
 :::-> $ grep -A1000 'Ok(quote::quote! {' cache_diff_derive/src/lib.rs | awk '/})/ {print; exit} {print}'
 ```
 
-In the above code, variables can be substituted in order to generate code by starting with a pound (`#`). For example, `#struct_identifier` will be replaced with ident from the `let struct_identifier` variable. The `#(#comparisons)*` code expands the `let comparisons` variable which contains a `Vec<proc_macro2::TokenStream>` which is generated via the `quote::quote!` macro (which we'll look into in a minute). You can read more about [this syntax in the quote docs](https://docs.rs/quote/1.0.38/quote/macro.quote.html#interpolation). From the quote docs:
+In the above code, variables can be substituted in order to generate code by starting with a pound (`#`). For example, `#ident` will be replaced with ident from the `let let` variable. The `#(#comparisons)*` code expands the `let comparisons` variable which contains a `Vec<proc_macro2::TokenStream>` which is generated via the `quote::quote!` macro (which we'll look into in a minute). You can read more about [this syntax in the quote docs](https://docs.rs/quote/1.0.38/quote/macro.quote.html#interpolation). From the quote docs:
 
 > Repetition is done using #(...)* or #(...),* again similar to macro_rules!. This iterates through the elements of any variable interpolated within the repetition and inserts a copy of the repetition body for each one. The variables in an interpolation may be a Vec, slice, BTreeSet, or any Iterator.
 
@@ -139,9 +139,7 @@ Now verify it all works:
 :::>- $ cargo test
 ```
 
-Congrats! You just wrote a derive macro! But we're not done yet. Let's add some logic for parsing attributes to let users configure behavior without needing to manually implement the trait.
-
-If your project is failing or if the tests you added didn't run, here's the full project for reference:
+Great! If your project is failing or if the tests you added didn't run, here's the full project for reference:
 
 <details>
   <summary>Full project</summary>
@@ -158,5 +156,36 @@ If your project is failing or if the tests you added didn't run, here's the full
 ```
 </details>
 
+Great! Our macro needs to be able to handle any possible valid Rust code input. You may have noticed we needed to explicitly extract information about generics and use that to generate our trait:
 
-Now, that we have the base functionality in place, let's look a little bit a derive macro attributes so we can make our trait Derive easy to customize.
+```rust
+:::-> $ grep -A1000 'split_for_impl()' cache_diff_derive/src/lib.rs |  awk '/#type_generics/ {print; exit} {print}'
+```
+
+To verify that our code works with generics you can add a test for that behavior:
+
+```rust
+//!
+//! #{BACKTICKS}
+//! use cache_diff::CacheDiff;
+//!
+//! #[derive(CacheDiff, Debug)]
+//! struct Metadata<T> {
+//!     ruby_version: String,
+//!     architecture: T,
+//! }
+//!
+//! let diff = Metadata<String> {ruby_version: "3.4.2".to_string(), architecture: "arm64".to_string()}
+//!     .diff(&Metadata<String> {ruby_version: "3.3.1".to_string(), architecture: "amd64".to_string()});
+//!
+//! assert_eq!(
+//!     vec!["ruby version (3.3.1 to 3.4.2)".to_string(), "architecture (amd64 to arm64)".to_string()],
+//!     diff
+//! );
+//! #{BACKTICKS}
+EOF
+%>
+<%= append(filename: "cache_diff/src/lib.rs", module_docs: module_docs) %>
+```
+
+Congrats! You just wrote a derive macro! But we're not done yet. Now, that we have the base functionality in place, let's look a little bit a derive macro attributes so we can make our trait Derive easy to customize.
