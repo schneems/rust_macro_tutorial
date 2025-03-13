@@ -26,6 +26,8 @@ pub(crate) struct ParseContainer {
     /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programatic
     /// reference to `Metadata` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
+    /// Info about generics, lifetimes and where clauses i.e. `struct Metadata<T> { name: T }`
+    pub(crate) generics: syn::Generics,
     /// Fields (i.e. `name: String`) and their associated attributes i.e. `#[cache_diff(...)]`
     pub(crate) fields: Vec<ParseField>,
 }
@@ -51,6 +53,7 @@ Now that we've got a place to hold the data, let's build it from the input AST. 
 impl ParseContainer {
     pub(crate) fn from_derive_input(input: &syn::DeriveInput) -> Result<Self, syn::Error> {
         let ident = input.ident.clone();
+        let generics = input.generics.clone();
         let fields = match input.data {
             syn::Data::Struct(syn::DataStruct {
                 fields: syn::Fields::Named(syn::FieldsNamed { ref named, .. }),
@@ -67,7 +70,7 @@ impl ParseContainer {
         .map(ParseField::from_field)
         .collect::<Result<Vec<ParseField>, syn::Error>>()?;
 
-        Ok(ParseContainer { ident, fields })
+        Ok(ParseContainer { ident, generics, fields })
     }
 }
 CODE

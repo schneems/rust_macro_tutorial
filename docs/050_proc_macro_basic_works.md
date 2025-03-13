@@ -21,7 +21,8 @@ fn create_cache_diff(item: proc_macro2::TokenStream)
     -> syn::Result<proc_macro2::TokenStream> {
     let derive_input: syn::DeriveInput = syn::parse2(item)?;
     let container = ParseContainer::from_derive_input(&derive_input)?;
-    let struct_identifier = &container.ident;
+    let ident = &container.ident;
+    let generics = &container.generics;
 
     let mut comparisons = Vec::new();
     for field in container.fields.iter() {
@@ -43,9 +44,9 @@ fn create_cache_diff(item: proc_macro2::TokenStream)
             }
         });
     }
-
+    let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
     Ok(quote::quote! {
-        impl cache_diff::CacheDiff for #struct_identifier {
+        impl #impl_generics ::cache_diff::CacheDiff for #ident #type_generics #where_clause {
             fn diff(&self, old: &Self) -> ::std::vec::Vec<String> {
                 let mut differences = ::std::vec::Vec::new();
                 #(#comparisons)*
@@ -73,7 +74,7 @@ The function `syn::parse2` is especially designed to turn a `proc_macro2::TokenS
 We will need the identity of the container (i.e. `Metadata`) for code generation later with the `quote::quote!` macro:
 
 ```rust
-:::-> $ grep 'let struct_identifier' cache_diff_derive/src/lib.rs
+:::-> $ grep 'let ident' cache_diff_derive/src/lib.rs
 :::>> print.text "    // ..."
 :::-> $ grep -A1000 'Ok(quote::quote! {' cache_diff_derive/src/lib.rs | awk '/})/ {print; exit} {print}'
 ```

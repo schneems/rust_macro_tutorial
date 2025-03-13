@@ -12,6 +12,7 @@ replace(filename: "cache_diff_derive/src/lib.rs", match: /fn create_cache_diff/,
 fn create_cache_diff(item: proc_macro2::TokenStream) -> syn::Result<proc_macro2::TokenStream> {
     let ParseContainer {
         ident,
+        generics,
         custom,
         fields,
     } = ParseContainer::from_derive_input(&syn::parse2(item)?)?;
@@ -50,9 +51,9 @@ fn create_cache_diff(item: proc_macro2::TokenStream) -> syn::Result<proc_macro2:
             });
         }
     }
-
+    let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
     Ok(quote::quote! {
-        impl ::cache_diff::CacheDiff for #ident {
+        impl #impl_generics ::cache_diff::CacheDiff for #ident #type_generics #where_clause {
             fn diff(&self, old: &Self) -> ::std::vec::Vec<String> {
                 let mut differences = ::std::vec::Vec::new();
                 #custom_diff
