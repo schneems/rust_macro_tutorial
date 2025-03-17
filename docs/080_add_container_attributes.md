@@ -14,8 +14,10 @@ import << "use strum::IntoEnumIterator;"
 code = <<-EOF
 /// A single attribute
 #[derive(strum::EnumDiscriminants, Debug, PartialEq)]
-#[strum_discriminants(derive(strum::EnumIter, strum::Display, strum::EnumString))]
-#[strum_discriminants(name(KnownAttribute))]
+#[strum_discriminants(
+    name(KnownAttribute),
+    derive(strum::EnumIter, strum::Display, strum::EnumString, Hash)
+)]
 enum ParseAttribute {
     #[allow(non_camel_case_types)]
     custom(syn::Path), // #[cache_diff(custom=<function>)]
@@ -35,42 +37,7 @@ We will go ahead and add an implementation of `syn::parse::Parse` for `KnownAttr
 impl syn::parse::Parse for KnownAttribute {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let identity: syn::Ident = input.parse()?;
-        KnownAttribute::from_str(&identity.to_string()).map_err(|_| {
-            syn::Error::new(
-                identity.span(),
-                format!(
-                    "Unknown {NAMESPACE} attribute: `{identity}`. Must be one of {valid_keys}",
-                    valid_keys = KnownAttribute::iter()
-                        .map(|key| format!("`{key}`"))
-                        .collect::<Vec<String>>()
-                        .join(", ")
-                ),
-            )
-        })
-    }
-}
-CODE
-%>
-```
-
-Then, turning an input into a vector of parsed attributes looks pretty similar as well:
-
-```rust
-:::>> print.erb
-<%=
-append(filename: "cache_diff_derive/src/parse_container.rs", code: <<-CODE)
-impl ParseAttribute {
-    fn from_attrs(attrs: &[syn::Attribute]) -> Result<Vec<ParseAttribute>, syn::Error> {
-        let mut attributes = Vec::new();
-        for attr in attrs.iter().filter(|attr| attr.path().is_ident(NAMESPACE)) {
-            for attribute in attr.parse_args_with(
-                syn::punctuated::Punctuated::<ParseAttribute, syn::Token![,]>::parse_terminated,
-            )? {
-                attributes.push(attribute)
-            }
-        }
-
-        Ok(attributes)
+        crate::shared::known_attribute(&identity)
     }
 }
 CODE
@@ -129,10 +96,12 @@ Verify your intuition (and my claims) with some tests. Add this test code:
         };
 
         assert!(matches!(
-            ParseAttribute::from_attrs(&input.attrs)
+            crate::shared::attribute_lookup::<ParseAttribute>(&input.attrs)
                 .unwrap()
-                .first(),
-            Some(ParseAttribute::custom(_))
+                .remove(&KnownAttribute::custom)
+                .unwrap()
+                .into_inner(),
+            ParseAttribute::custom(_)
         ));
     }
 CODE
@@ -170,6 +139,15 @@ CODE
 %>
 ```
 
+Import the helper struct:
+
+```rust
+:::>> print.erb
+<%=
+append(filename: "cache_diff_derive/src/parse_container.rs", use: "use crate::shared::WithSpan;")
+%>
+```
+
 Now, update the logic for building the container. Replace this code:
 
 ```rust
@@ -180,13 +158,14 @@ impl ParseContainer {
     pub(crate) fn from_derive_input(input: &syn::DeriveInput) -> Result<Self, syn::Error> {
         let ident = input.ident.clone();
         let generics = input.generics.clone();
-        let attributes = ParseAttribute::from_attrs(&input.attrs)?;
-        let custom = attributes
-            .into_iter()
-            .map(|attribute| match attribute {
+        let mut lookup = crate::shared::attribute_lookup::<ParseAttribute>(&input.attrs)?;
+        let custom = lookup
+            .remove(&KnownAttribute::custom)
+            .map(WithSpan::into_inner)
+            .map(|parsed| match parsed {
                 ParseAttribute::custom(path) => path,
-            })
-            .last();
+            });
+
         let fields = match input.data {
             syn::Data::Struct(syn::DataStruct {
                 fields: syn::Fields::Named(syn::FieldsNamed { ref named, .. }),
@@ -203,17 +182,25 @@ impl ParseContainer {
         .map(ParseField::from_field)
         .collect::<Result<Vec<ParseField>, syn::Error>>()?;
 
+        crate::shared::check_empty(lookup)?;
+
         if let Some(field) = fields
             .iter()
             .find(|field| matches!(field.ignore.as_deref(), Some("custom")))
         {
             if custom.is_none() {
-                return Err(syn::Error::new(ident.span(),
-                            format!(
-                                "field `{field}` on {container} marked ignored as custom, but no `#[{NAMESPACE}(custom = <function>)]` found on `{container}`",
-                                field = field.ident,
-                                container = &ident,
-                            )));
+                let mut error = syn::Error::new(
+                    proc_macro2::Span::call_site(),
+                    format!("`Expected `{ident}` to implement the `custom` attribute `#[{NAMESPACE}(custom = <function>)]`, but it does not"),
+                );
+                error.combine(syn::Error::new(
+                    field.ident.span(),
+                    format!(
+                        "Field `{}` is ignored and requires `{ident}` to implement `custom`",
+                        field.ident
+                    ),
+                ));
+                return Err(error);
             }
         }
 
@@ -233,33 +220,16 @@ CODE
 %>
 ```
 
-The are two new things here, one of them is small and expected:
+The are two new things here, one of them is small and expected. We lookup the custom attribute from our `HashMap` similar to what we did with `ParseField`:
 
 ```rust
-let custom = attributes
-    .into_iter()
-    .map(|attribute| match attribute {
-        ParseAttribute::custom(path) => path,
-    })
-    .last();
+:::-> $ grep -A1000 'let custom = lookup' cache_diff_derive/src/shared.rs | awk '/\;/ {print; exit} {print}'
 ```
 
-This is where we're pulling out the attribute information and querying it, similar to how we did it with the `ParseField`. Hopefully you expected that addition. The other is: A bunch of manual error handling. For example:
+Hopefully you expected that addition. The other is: A bunch of error handling. For example:
 
 ```rust
-if let Some(field) = fields
-    .iter()
-    .find(|field| matches!(field.ignore.as_deref(), Some("custom")))
-{
-    if custom.is_none() {
-        return Err(syn::Error::new(ident.span(),
-                    format!(
-                        "field `{field}` on {container} marked ignored as custom, but no `#[{NAMESPACE}(custom = <function>)]` found on `{container}`",
-                        field = field.ident,
-                        container = &ident,
-                    )));
-    }
-}
+:::-> $ grep -A1000 'if let Some(field) = fields' cache_diff_derive/src/shared.rs | awk '/\;/ {print; exit} {print}'
 ```
 
 Previously when I added the ability to set a field as ignored with a reason, it gave us the ability to add a preference signal that did something meaningful. In this case we are saying that if the user adds a `#[cache_diff(ignore = "custom")]` to one of their fields, they MUST also add a `#[cache_diff(custom = <function>)]` to the container. Because proc macros make it faster for the end user to generate and manipulate code, it makes it faster for them to make mistakes too. You could imagaine a scenario where they're playing around with configuration options and they accidentally delete the container attribute line, and it's not caught in code review and the linter isn't loud enough, so they deploy with code that looks correct but isn't.
@@ -269,15 +239,7 @@ The nice thing about adding this error here, is that when the user tries to comp
 The other error is here:
 
 ```rust
-if fields.iter().any(|f| f.ignore.is_none()) {
-    Ok(ParseContainer {
-        ident,
-        fields,
-        custom,
-    })
-} else {
-    Err(syn::Error::new(ident.span(), format!("No fields to compare for {MACRO_NAME}, ensure struct has at least one named field that isn't `{NAMESPACE}(ignore)`")))
-}
+:::-> $ grep -A1000 'if fields.iter().any(|f| f.ignore.is_none())' cache_diff_derive/src/shared.rs | awk '/        }/ {print; exit} {print}'
 ```
 
 If someone tries to use the macro on an empty struct or accidentally ignores all the fields, then I don't want the derive code to compile. If someone has a legitimate use for a type that is `impl CacheDiff` but always returns an empty difference set, that's fine...but I won't help them construct such an abomination (i.e. I'm not blocking them from implementing it manually, only blocking it via a derive macro). Whenever I write reflection code, I like to have a strong sense of what code paths should be encouraged, which should be allowable but discouraged, and which should be impossible. I also believe that many programmers have more smarts than empathy and thanks to Turing completeness, that means statements like "I cannot imagine a reason why anyone would want to X," may be due to lack of imagination, rather than a lack of a good reason for doing that thing.

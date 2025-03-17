@@ -74,7 +74,8 @@ It calls a function `create_cache_diff` which returns a `syn::Result<proc_macro2
 This macro takes converts text into rust code, we can also pass in variables, but for now we just want the code to compile. Verify your code builds:
 
 ```term
-:::>- $ cargo build
+:::>> print.text $ cargo build
+:::-- $ cargo build --offline
 ```
 
 Congrats! You just wrote your first proc macro! To use it we'll need to expose it through our non-derive crate that also carries the trait definition. First declare a dependency on our derive crate:
