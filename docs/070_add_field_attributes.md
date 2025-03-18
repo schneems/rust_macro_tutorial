@@ -525,7 +525,7 @@ replace(filename: "cache_diff_derive/src/parse_field.rs", match: /pub\(crate\) s
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
 #[derive(Debug)]
 pub(crate) struct ParseField {
-    /// The proc-macro identifier for a field i.e. `name: String` would be a programatic
+    /// The proc-macro identifier for a field i.e. `name: String` would be a programmatic
     /// reference to `name` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// What the user will see when this field differs and invalidates the cache

@@ -124,7 +124,7 @@ replace(filename: "cache_diff_derive/src/parse_container.rs", match: /pub\(crate
 /// i.e. `#[cache_diff( ... )]`
 #[derive(Debug)]
 pub(crate) struct ParseContainer {
-    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programatic
+    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programmatic
     /// reference to `Metadata` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// Info about generics, lifetimes and where clauses i.e. `struct Metadata<T> { name: T }`

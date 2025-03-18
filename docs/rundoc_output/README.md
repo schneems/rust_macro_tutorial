@@ -593,7 +593,7 @@ This struct has one field named `version` with a value of `String` type. We need
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
 #[derive(Debug)]
 pub(crate) struct ParseField {
-    /// The proc-macro identifier for a field i.e. `name: String` would be a programatic
+    /// The proc-macro identifier for a field i.e. `name: String` would be a programmatic
     /// reference to `name` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// What the user will see when this field differs and invalidates the cache
@@ -703,7 +703,7 @@ use syn::spanned::Spanned;
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
 #[derive(Debug)]
 pub(crate) struct ParseField {
-    /// The proc-macro identifier for a field i.e. `name: String` would be a programatic
+    /// The proc-macro identifier for a field i.e. `name: String` would be a programmatic
     /// reference to `name` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// What the user will see when this field differs and invalidates the cache
@@ -792,7 +792,7 @@ use crate::parse_field::ParseField;
 /// i.e. `#[cache_diff( ... )]`
 #[derive(Debug)]
 pub(crate) struct ParseContainer {
-    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programatic
+    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programmatic
     /// reference to `Metadata` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// Info about generics, lifetimes and where clauses i.e. `struct Metadata<T> { name: T }`
@@ -1431,7 +1431,7 @@ use syn::spanned::Spanned;
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
 #[derive(Debug)]
 pub(crate) struct ParseField {
-    /// The proc-macro identifier for a field i.e. `name: String` would be a programatic
+    /// The proc-macro identifier for a field i.e. `name: String` would be a programmatic
     /// reference to `name` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// What the user will see when this field differs and invalidates the cache
@@ -1493,7 +1493,7 @@ use crate::MACRO_NAME;
 /// i.e. `#[cache_diff( ... )]`
 #[derive(Debug)]
 pub(crate) struct ParseContainer {
-    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programatic
+    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programmatic
     /// reference to `Metadata` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// Info about generics, lifetimes and where clauses i.e. `struct Metadata<T> { name: T }`
@@ -2363,7 +2363,7 @@ At this point we've added the ability to extract any cache_diff attributes from 
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
 #[derive(Debug)]
 pub(crate) struct ParseField {
-    /// The proc-macro identifier for a field i.e. `name: String` would be a programatic
+    /// The proc-macro identifier for a field i.e. `name: String` would be a programmatic
     /// reference to `name` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// What the user will see when this field differs and invalidates the cache
@@ -2387,7 +2387,7 @@ With with these new contents:
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
 #[derive(Debug)]
 pub(crate) struct ParseField {
-    /// The proc-macro identifier for a field i.e. `name: String` would be a programatic
+    /// The proc-macro identifier for a field i.e. `name: String` would be a programmatic
     /// reference to `name` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// What the user will see when this field differs and invalidates the cache
@@ -2878,7 +2878,7 @@ use crate::shared::WithSpan;
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
 #[derive(Debug)]
 pub(crate) struct ParseField {
-    /// The proc-macro identifier for a field i.e. `name: String` would be a programatic
+    /// The proc-macro identifier for a field i.e. `name: String` would be a programmatic
     /// reference to `name` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// What the user will see when this field differs and invalidates the cache
@@ -3072,7 +3072,7 @@ use crate::MACRO_NAME;
 /// i.e. `#[cache_diff( ... )]`
 #[derive(Debug)]
 pub(crate) struct ParseContainer {
-    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programatic
+    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programmatic
     /// reference to `Metadata` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// Info about generics, lifetimes and where clauses i.e. `struct Metadata<T> { name: T }`
@@ -3276,7 +3276,7 @@ Now we can parse attributes for containers let's add that information to our con
 /// i.e. `#[cache_diff( ... )]`
 #[derive(Debug)]
 pub(crate) struct ParseContainer {
-    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programatic
+    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programmatic
     /// reference to `Metadata` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// Info about generics, lifetimes and where clauses i.e. `struct Metadata<T> { name: T }`
@@ -3301,7 +3301,7 @@ With with these new contents:
 /// i.e. `#[cache_diff( ... )]`
 #[derive(Debug)]
 pub(crate) struct ParseContainer {
-    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programatic
+    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programmatic
     /// reference to `Metadata` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// Info about generics, lifetimes and where clauses i.e. `struct Metadata<T> { name: T }`
@@ -4373,7 +4373,7 @@ use crate::shared::WithSpan;
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
 #[derive(Debug)]
 pub(crate) struct ParseField {
-    /// The proc-macro identifier for a field i.e. `name: String` would be a programatic
+    /// The proc-macro identifier for a field i.e. `name: String` would be a programmatic
     /// reference to `name` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// What the user will see when this field differs and invalidates the cache
@@ -4571,7 +4571,7 @@ use crate::shared::WithSpan;
 /// i.e. `#[cache_diff( ... )]`
 #[derive(Debug)]
 pub(crate) struct ParseContainer {
-    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programatic
+    /// The proc-macro identifier for a container i.e. `struct Metadata { }` would be a programmatic
     /// reference to `Metadata` that can be used along with `quote!` to produce code.
     pub(crate) ident: syn::Ident,
     /// Info about generics, lifetimes and where clauses i.e. `struct Metadata<T> { name: T }`
