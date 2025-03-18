@@ -2,7 +2,7 @@
 
 ## Create a ParseContainer to Derive with
 
-A container in our context is a struct. For example:
+A container, in our context, is a struct. For example:
 
 ```rust
 struct Metadata {
@@ -10,7 +10,7 @@ struct Metadata {
 }
 ```
 
-The container in this code is `Metadata` as it contains our fields. In proc-macro land a container can also be an enum. We want a way to model a container that holds zero or more named fields. Create this file and add this code:
+The container in this code is `Metadata` as it contains our fields. In proc-macro land, a container can also be an enum. We want a way to model a container that holds zero or more named fields. Create this file and add this code:
 
 ```rust
 :::>> print.erb
@@ -36,7 +36,7 @@ CODE
 %>
 ```
 
-Like before, we're holding a reference to `syn::Ident` which holds the identity of the struct (i.e. `Metadata`). Then, we're also capturing the `syn::Generics` which holds information needed to support things like structs with generics or where clauses. Then instead of holding a `syn` data type for fields, we're holding a `Vec` of our the `ParseField` struct we defined previously.
+Like before, we're holding a reference to `syn::Ident`, which holds the identity of the struct (i.e., `Metadata`). Then, we're also capturing the `syn::Generics`, which holds information needed to support things like structs with generics or where clauses. Then, instead of storing a `syn` data type for fields, we're holding a `Vec` of the `ParseField` struct we defined previously.
 
 Don't forget to let our project know about the new file by adding a `mod` declaration. Add it now:
 
@@ -45,7 +45,7 @@ Don't forget to let our project know about the new file by adding a `mod` declar
 <%= append(filename: "cache_diff_derive/src/lib.rs", mod: "mod parse_container;") %>
 ```
 
-Now that we've got a place to hold the data, let's build it from the input AST. Add this code:
+Now that we've got a place to hold the data let's build it from the input AST. Add this code:
 
 ```rust
 :::>> print.erb
@@ -83,29 +83,31 @@ What does this code do? The function takes in a `syn::DeriveInput` and returns i
 :::-> $ grep -A1000 'pub(crate) fn from_derive_input' cache_diff_derive/src/parse_container.rs | awk '/{/ {print; exit} {print}'
 ```
 
-While `ParseField` took in a `syn::Field`, there's no pre-defined "container" type from syn, instead `syn::DeriveInput` is anything that could be passed to a derive macro. And since derive macros can only be applied to containers you can mentally substitute "container" every time you see "Derive Input".
+While `ParseField` took in a `syn::Field`, there's no pre-defined "container" type from syn; instead, `syn::DeriveInput` is anything that could be passed to a derive macro. You can mentally substitute the word "container" whenever you see `DeriveInput` because derive macros can only be applied to containers. If you need a mental image, think of a big rig (truck) driving to your town containing lots of goodies. Containers are derivable.
 
-All containers must be named so we can pull an identity directly (without needint to raise an error like we did with fields):
+> Derive input == container == (struct or enum or union)
+
+All containers for our macro are named, so we can pull an identity directly (without needing to raise an error as we did with fields):
 
 ```rust
 :::-> $ grep -A1000 'let ident' cache_diff_derive/src/parse_container.rs | awk '/\;/ {print; exit} {print}'
 ```
 
-This next bit is tricky, we will break it down:
+This next bit is tricky. We will break it down:
 
 ```rust
 :::-> $ grep -A1000 'let fields =' cache_diff_derive/src/parse_container.rs | awk '/\;/ {print; exit} {print}'
 ```
 
-Because derive input (a.k.a containers) can be different shapes (struct, enum, or union) we can use a match statement to pull out the information we need from named fields.
+Because a `DeriveInput` (A.K.A. "container") can take different shapes (struct, enum, or union), we can use a match statement to extract the information we need from named fields.
 
-The return value from `syn::Data` here is a `&syn::Punctuated<syn::Field, syn::Token::Comma>` which is a fancy way of saying that it's a `syn::Field` that is separated by commas. We can iterate over that type to yield `&syn::Field`, which is exactly what our `ParseField::from_field` function takes in:
+The return value from `syn::Data` here is a `&syn::Punctuated<syn::Field, syn::Token::Comma>`, which is a fancy way of saying that it's a `syn::Field` that is separated by commas. We can iterate over that type to yield `&syn::Field`, which is what our `ParseField::from_field` function takes in:
 
 ```rust
 :::-> $ grep -A1000 'into_iter()' cache_diff_derive/src/parse_container.rs | awk '/\;/ {print; exit} {print}'
 ```
 
-If that parsing is successful then we've got our data! But not so fast speed racer, we can't pass go until we write some tests. Add this test code now:
+If that parsing is successful, then we'll have our data! But not so fast **speed racer**. We can't pass GO until we write some tests. Add this test code now:
 
 ```rust
 :::>> print.erb
@@ -140,4 +142,4 @@ Verify it works:
 :::>- $ cargo test
 ```
 
-At this point, we've got a custom representation for our fields and for the container (that holds the fields). We'll use this to generate a simple version of our trait before extending our simple data structures to hold attribute information.
+At this point, we've got a custom representation for our fields and the container (that holds the fields). We'll use this to generate a simple version of our trait before extending our simple data structures to hold attribute information.
