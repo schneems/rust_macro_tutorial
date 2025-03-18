@@ -1,6 +1,6 @@
-<span id="chapter_07" />
+<span id="chapter_06" />
 
-## Understanding attributes for Derive customization
+## 06: Understanding attributes for Derive customization
 
 > [Skip](#chapter_08) this if: You are extremely familiar with derive macros and their associated terminology and interfaces.
 
@@ -24,9 +24,9 @@ And with attributes:
 use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serde(deny_unknown_fields)] // <== HERE
 struct Metadata {
-    #[serde(rename = "ruby_version")]
+    #[serde(rename = "ruby_version")] // <== HERE
     version: String,
     architecture: String,
 }
@@ -34,7 +34,7 @@ struct Metadata {
 
 In this code `#[serde(rename = "ruby_version")]` is an attribute on the field `version: String`. This [rename attribute](https://serde.rs/field-attrs.html) over-writes the default field name when serializing. The `#[serde(deny_unknown_fields)]` at the top is an attribute on the container, `Metadata`. This attribute of serde [errors if you try to deserialize a field it's not expecting](https://serde.rs/container-attrs.html). We can use this same attribute concept to customize the behavior of our `CacheDiff` trait generation.
 
-It's convention to name your attribute a lowercased name of your trait, so we will use the `#[cache_diff(...)]` attribute namespace. Technically the inside of the attribute we could use any format or DSL, but it's usually a good idea to mimic existing interfaces that people are already comfortable with. Most attributes take `<key> = <value>` and `<stand-alone-key>` formats. So that 's what we'll use.
+It's convention to name your attribute a [snake cased](https://en.wikipedia.org/wiki/Snake_case) name of your trait, so we will use the `#[cache_diff(...)]` attribute namespace. Technically the inside of the attribute we could use any format or DSL, but it's usually a good idea to mimic existing interfaces that people are already comfortable with. Most attributes take `<key> = <value>` and `<stand-alone-key>` formats. So that 's what we'll use.
 
 To recap:
 

@@ -1,6 +1,6 @@
-<span id="chapter_03" />
+<span id="chapter_02" />
 
-## Create an empty Proc Macro
+## 02: Create an empty Proc Macro
 
 To write a proc macro, we will need some crates. Add them now:
 

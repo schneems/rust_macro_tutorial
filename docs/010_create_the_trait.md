@@ -1,6 +1,6 @@
 <span id="chapter_01" />
 
-## Create the project
+## 01: Create the project
 
 We will begin by creating two projects, one will hold our trait definition and one will hold our "derive" proc macro.
 

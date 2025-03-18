@@ -1,7 +1,7 @@
 
-<span id="chapter_09" />
+<span id="chapter_08" />
 
-## Add attributes to ParseContainer
+## 08: Add attributes to ParseContainer
 
 Like we did with fields, we'll define an enum to hold each container attribute variant. Add this code:
 
