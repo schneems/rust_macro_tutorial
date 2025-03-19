@@ -1,9 +1,9 @@
 
 <span id="chapter_09" />
 
-## 9: Implement the full Derive macro (customizable with attributes)
+## 9: Implement the All-Wheel Derive Macro (customizable with attributes)
 
-With the parsing logic contained within `ParseContainer` and `ParseField` we can focus on implementing the core logic of our macro. Replace this code:
+With the parsing logic contained within `ParseContainer` and `ParseField`, we can focus on implementing the core logic of our macro. Replace this code:
 
 ```rust
 :::-> print.erb
@@ -67,11 +67,11 @@ CODE
 %>
 ```
 
-One thing to call out here is that I'm using `::std::vec::Vec<String>` this is because the environment where the generated code will live is not "hygenic." The [rust refernce](https://doc.rust-lang.org/reference/procedural-macros.html#procedural-macro-hygiene) says more. But basically if you used `Vec` then the calling code could change the behavior of your output by accident if they `use some_other_thing as Vec`. So to avoid ambiguity, we use full paths and start them with `::` (otherwise someone could `use other_thing as std`).
+One thing to call out here is that I'm using `::std::vec::Vec<String>`. The beginning `::` is because the environment where the generated code will live is not hygienic." The [rust reference](https://doc.rust-lang.org/reference/procedural-macros.html#procedural-macro-hygiene) says more. But basically, if you used `Vec`, then the calling code could change the behavior of your output by accident if they `use some_other_thing as Vec`. So, to avoid ambiguity, we use full paths and start them with `::` (otherwise, someone could `use other_thing as std`).
 
-The logic inside of the function is similar to what we saw before. Pull out values from parsed token stream using `syn`. And those values to generate rust code with `quote`. Like before, we're going to write some doctests that use our features like a user would. Beyond convincing you that the code we wrote works, this documentation will be easy to find for anyone using the macro.
+The logic inside of the function is similar to what we saw before. Pull out values from the parsed token stream using `syn`. Use those values to generate rust code with `quote`. Like before, we will write doctests that use our features like a user would. Beyond convincing you that the code we wrote works, this documentation will be easy to find for anyone using the macro.
 
-I like to make one example per (major) feature. And, if possible, use something that's close to the real-world reason why I added the feature. In my [book on contributing to open source](http://howtoopensource.dev/), there is a  documentation chapter where we document code someone else wrote, I stressed that documentation should help answer the question "why does this (feature) exist." Great documentation doesn't just say why the code exists, it shows it.
+I like to make one example per (major) feature. And use something close to the real-world reason why I added the feature. In my [book on contributing to open source](http://howtoopensource.dev/), there is a  documentation chapter where we document code someone else wrote, I stressed that documentation should help answer the question "why does this (feature) exist." Great documentation doesn't just say why the code exists. It shows it.
 
 Add docs for `ignore` now:
 
@@ -220,7 +220,7 @@ Add custom function docs:
 //! with some strings if there is a difference and an empty vector if there are none.
 //!
 //! Don't forget to `#[cache_diff(ignore = "custom")]` any fields you're implementing yourself. You can also use this feature to
-//! combine several fields into a single diff output, for example using the previous struct, if
+//! combine several fields into a single diff output, for example, using the previous struct, if
 //! you only wanted to have one output for a combined `os_distribution` and `os_version` in one output
 //! like "OS (ubuntu-22 to ubuntu-24)". Alternatively, you can use <https://github.com/schneems/magic_migrate> to
 //! re-arrange your struct to only have one field with a custom display.
@@ -254,4 +254,4 @@ If your project is failing or if the tests you added didn't run, here's the full
 </details>
 
 
-If your code compiles, then congradulations, you just earned your Derive-ing license!
+If your code compiles, congratulations, you just earned your Derive-ing license!

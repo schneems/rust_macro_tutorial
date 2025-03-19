@@ -41,4 +41,4 @@ As the tutorial progresses, you'll see details of how this trait is used and why
 - [06 - Understanding attributes for Derive customization](#chapter_06)
 - [07 - Add attributes to ParseField](#chapter_07)
 - [08 - Add attributes to ParseContainer](#chapter_08)
-- [09 - Implement the full Derive macro (customizable with attributes)](#chapter_09)
+- [09 - Implement the All-Wheel Derive Macro (customizable with attributes)](#chapter_09)
