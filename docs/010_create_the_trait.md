@@ -49,8 +49,6 @@ The project now looks like this:
 
 We need two crates because a proc-macro must live in a stand-alone crate. This split allows Rust to compile and run that code before the rest of the code in a project is compiled. A limitation is that it can only export macros, so we need somewhere else for other public things (like traits) to live.
 
-<span id="chapter_02" />
-
 ## Define the CacheDiff trait manually
 
 Once the project is set up, we'll start by defining a public trait:
