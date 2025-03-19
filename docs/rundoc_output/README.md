@@ -329,14 +329,14 @@ And when you run tests, it should look a little like this:
 
 ```
 $ cargo test
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff_derive)
-   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.17s
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive)
+   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.26s
      Running unittests src/lib.rs (target/debug/deps/cache_diff-2716017b25caff21)
 
 running 2 tests
-test tests::test_unchanged_metadata ... ok
 test tests::test_changed_metadata ... ok
+test tests::test_unchanged_metadata ... ok
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
@@ -1665,7 +1665,7 @@ fn main() {
 Then it will produce this error:
 
 ```
-   Compiling lol v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/lol)
+   Compiling lol v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/lol)
 error[E0277]: `PathBuf` doesn't implement `std::fmt::Display`
  --> src/main.rs:4:5
   |
@@ -1749,9 +1749,9 @@ Now that we know what we want the destination to look like, we're ready to modif
 
 Our macro will need both field and container attributes. Our readme-driven development left us with three things to customize on the field:
 
-- [cache_diff(ignore)](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#ignore-attributes)
-- [cache_diff(display = <code path>)](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#handle-structs-missing-display)
-- [cache_diff(rename = "<new name>")](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#rename-attributes)
+- [`cache_diff(ignore)`](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#ignore-attributes)
+- [`cache_diff(display = <code path>)`](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#handle-structs-missing-display)
+- [`cache_diff(rename = "<new name>")`](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#rename-attributes)
 
 And one thing to customize on the container:
 
@@ -3807,7 +3807,7 @@ And make sure it works as expected:
 $ cargo clippy
     Checking unicode-ident v1.0.18
     Checking strum v0.27.1
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff_derive)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive)
     Checking proc-macro2 v1.0.94
 warning: unused import: `std::str::FromStr`
  --> cache_diff_derive/src/parse_field.rs:4:5
@@ -3838,11 +3838,11 @@ warning: unused import: `strum::IntoEnumIterator`
     Checking quote v1.0.39
     Checking syn v2.0.100
 warning: `cache_diff_derive` (lib) generated 4 warnings (run `cargo clippy --fix --lib -p cache_diff_derive` to apply 3 suggestions)
-    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff)
+    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff)
 warning: `cache_diff_derive` (lib) generated 4 warnings (4 duplicates)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.08s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.06s
 $ cargo test
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff_derive)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive)
 warning: unused import: `std::str::FromStr`
  --> cache_diff_derive/src/parse_field.rs:4:5
   |
@@ -3876,23 +3876,23 @@ warning: unused import: `strum::IntoEnumIterator`
   |     ^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: `cache_diff_derive` (lib) generated 4 warnings (run `cargo fix --lib -p cache_diff_derive` to apply 3 suggestions)
-   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff)
+   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff)
 warning: `cache_diff_derive` (lib test) generated 5 warnings (4 duplicates) (run `cargo fix --lib -p cache_diff_derive --tests` to apply 1 suggestion)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.77s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.82s
      Running unittests src/lib.rs (target/debug/deps/cache_diff-1e69b84e0de1a0a9)
 
 running 2 tests
-test tests::test_changed_metadata ... ok
 test tests::test_unchanged_metadata ... ok
+test tests::test_changed_metadata ... ok
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
      Running tests/compilation_tests.rs (target/debug/deps/compilation_tests-2d3369eb9b14b304)
 
 running 2 tests
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff_derive)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive)
 warning: unused import: `std::str::FromStr`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff_derive/src/parse_field.rs:4:5
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_field.rs:4:5
   |
 4 | use std::str::FromStr;
   |     ^^^^^^^^^^^^^^^^^
@@ -3900,85 +3900,85 @@ warning: unused import: `std::str::FromStr`
   = note: `#[warn(unused_imports)]` on by default
 
 warning: unused import: `strum::IntoEnumIterator`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff_derive/src/parse_field.rs:5:5
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_field.rs:5:5
   |
 5 | use strum::IntoEnumIterator;
   |     ^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `std::str::FromStr`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff_derive/src/parse_container.rs:4:5
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_container.rs:4:5
   |
 4 | use std::str::FromStr;
   |     ^^^^^^^^^^^^^^^^^
 
 warning: unused import: `strum::IntoEnumIterator`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff_derive/src/parse_container.rs:5:5
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_container.rs:5:5
   |
 5 | use strum::IntoEnumIterator;
   |     ^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: `cache_diff_derive` (lib) generated 4 warnings (run `cargo fix --lib -p cache_diff_derive` to apply 3 suggestions)
-    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff)
-    Checking cache_diff-tests v0.0.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/target/tests/trybuild/cache_diff)
+    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff)
+    Checking cache_diff-tests v0.0.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/target/tests/trybuild/cache_diff)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.49s
-
-
-test tests/fails/duplicate_attribute.rs ... ok
-
-
-test should_not_compile ... ok
-warning: unused import: `std::str::FromStr`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff_derive/src/parse_field.rs:4:5
-  |
-4 | use std::str::FromStr;
-  |     ^^^^^^^^^^^^^^^^^
-  |
-  = note: `#[warn(unused_imports)]` on by default
-
-warning: unused import: `strum::IntoEnumIterator`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff_derive/src/parse_field.rs:5:5
-  |
-5 | use strum::IntoEnumIterator;
-  |     ^^^^^^^^^^^^^^^^^^^^^^^
-
-warning: unused import: `std::str::FromStr`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff_derive/src/parse_container.rs:4:5
-  |
-4 | use std::str::FromStr;
-  |     ^^^^^^^^^^^^^^^^^
-
-warning: unused import: `strum::IntoEnumIterator`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/cache_diff_derive/src/parse_container.rs:5:5
-  |
-5 | use strum::IntoEnumIterator;
-  |     ^^^^^^^^^^^^^^^^^^^^^^^
-
-warning: `cache_diff_derive` (lib) generated 4 warnings (run `cargo fix --lib -p cache_diff_derive` to apply 3 suggestions)
-    Checking cache_diff-tests v0.0.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-97315-gjz2i5/cache_diff/target/tests/trybuild/cache_diff)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.02s
 
 
 There are no trybuild tests enabled yet.
 
 
 test should_compile ... ok
+warning: unused import: `std::str::FromStr`
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_field.rs:4:5
+  |
+4 | use std::str::FromStr;
+  |     ^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
 
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.68s
+warning: unused import: `strum::IntoEnumIterator`
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_field.rs:5:5
+  |
+5 | use strum::IntoEnumIterator;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::str::FromStr`
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_container.rs:4:5
+  |
+4 | use std::str::FromStr;
+  |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `strum::IntoEnumIterator`
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_container.rs:5:5
+  |
+5 | use strum::IntoEnumIterator;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `cache_diff_derive` (lib) generated 4 warnings (run `cargo fix --lib -p cache_diff_derive` to apply 3 suggestions)
+    Checking cache_diff-tests v0.0.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/target/tests/trybuild/cache_diff)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.03s
+
+
+test tests/fails/duplicate_attribute.rs ... ok
+
+
+test should_not_compile ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
 
      Running unittests src/lib.rs (target/debug/deps/cache_diff_derive-b1392a164ca5ac04)
 
 running 12 tests
-test parse_container::tests::test_known_attributes ... ok
-test parse_container::tests::test_parse_attribute ... ok
 test parse_field::tests::test_parse_attributes ... ok
-test parse_container::tests::test_no_fields ... ok
+test parse_container::tests::test_known_attributes ... ok
 test parse_field::tests::test_known_attributes ... ok
-test parse_container::tests::test_custom_parse_attribute ... ok
-test parse_container::tests::test_all_ignored ... ok
-test parse_field::tests::test_parse_field_plain ... ok
+test parse_container::tests::test_parse_attribute ... ok
+test parse_field::tests::test_requires_named_struct ... ok
 test shared::tests::test_parse_attrs_with_span_vec_demo ... ok
 test shared::tests::test_parse_attrs_vec_demo ... ok
-test parse_field::tests::test_requires_named_struct ... ok
+test parse_field::tests::test_parse_field_plain ... ok
+test parse_container::tests::test_no_fields ... ok
+test parse_container::tests::test_custom_parse_attribute ... ok
+test parse_container::tests::test_all_ignored ... ok
 test parse_container::tests::test_parses ... ok
 
 test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
@@ -3992,7 +3992,7 @@ test cache_diff/src/lib.rs - (line 8) ... ok
 test cache_diff/src/lib.rs - (line 48) ... ok
 test cache_diff/src/lib.rs - (line 72) ... ok
 
-test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.74s
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
 
    Doc-tests cache_diff_derive
 

@@ -5,9 +5,9 @@
 
 Our macro will need both field and container attributes. Our readme-driven development left us with three things to customize on the field:
 
-- [cache_diff(ignore)](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#ignore-attributes)
-- [cache_diff(display = <code path>)](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#handle-structs-missing-display)
-- [cache_diff(rename = "<new name>")](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#rename-attributes)
+- [`cache_diff(ignore)`](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#ignore-attributes)
+- [`cache_diff(display = <code path>)`](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#handle-structs-missing-display)
+- [`cache_diff(rename = "<new name>")`](https://github.com/heroku-buildpacks/cache_diff/blob/fc854c0a1f0e89868bf3d822611dd21229af46f3/cache_diff/README.md#rename-attributes)
 
 And one thing to customize on the container:
 
@@ -19,7 +19,7 @@ Like before, we'll represent this state in code and fill out the rest of our pro
 
 ```
 :::>> print.text $ cargo add strum@0.27.1 --package cache_diff_derive --features derive
-:::>- $ cargo add strum@0.27.1 --package cache_diff_derive --features derive --offline
+:::-- $ cargo add strum@0.27.1 --package cache_diff_derive --features derive --offline
 ```
 
 The dependencies look like this:
