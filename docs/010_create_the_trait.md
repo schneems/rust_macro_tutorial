@@ -2,7 +2,7 @@
 
 ## 01: Create the project
 
-We will begin by creating two projects, one will hold our trait definition and one will hold our "derive" proc macro.
+We will begin by creating two projects: one to hold our trait definition and one to hold our "derive" proc macro.
 
 ```term
 :::>> $ mkdir cache_diff
@@ -28,7 +28,7 @@ members = [
 resolver = "2"
 ```
 
-This workspace will allow us to run all tests via `cargo test` from the top level directory. Ignore your build files so they don't show up in the debug output later.
+This workspace will allow us to run all tests via `cargo test` from the top-level directory. Ignore your build files so they don't appear in the debug output later.
 
 ```
 :::>> file.write .gitignore
@@ -47,13 +47,13 @@ The project now looks like this:
 :::>> $ exa --tree --git-ignore .
 ```
 
-We need two crates because a procmacro must live in a stand alone crate. This allows Rust to compile and run that code before the rest of the code in a project is compiled. A limitation is that it can only export macros, so we need somewhere else for other public things (like traits) to live.
+We need two crates because a proc-macro must live in a stand-alone crate. This split allows Rust to compile and run that code before the rest of the code in a project is compiled. A limitation is that it can only export macros, so we need somewhere else for other public things (like traits) to live.
 
 <span id="chapter_02" />
 
 ## Define the CacheDiff trait manually
 
-Once the project is setup, we'll start off by defining a public trait:
+Once the project is set up, we'll start by defining a public trait:
 
 ```rust
 :::>> print.erb
@@ -67,13 +67,13 @@ CODE
 
 This trait is short. It's designed to communicate that a struct is intended to be used as a cache key. You'll see how it's used in some tests below.
 
-Fundamentally macros are a form of metaprogramming: Code that write code. Before jumping into any kind of automation, you'll want to understand how to do the task manually first. I try to iterate as much as possible manually before solidifying things in mcaros.
+Fundamentally, macros are a form of metaprogramming: code that writes code. Before jumping into any kind of automation, you'll want to understand how to do the task manually first. I try to iterate as much as possible manually before solidifying things in macros.
 
 ## Manually implement the trait
 
-> [Skip](#chapter_03) the rest of this section if: You already understand how the trait interface could be used and could write your own tests for it.
+> [Skip](#chapter_02) the rest of this section if: You already understand how the trait interface could be used and could write your tests for it.
 
-Here's a test showing how a developer might manually implement this trait. First we will add a stringly typed `Metadata` struct and implement the `CacheDiff` trait to simulate a world where we're storing a version of an architecture dependent binary that we're installing:
+Here's a test showing how a developer might manually implement this trait. First, we will add a "stringly" typed `Metadata` struct and implement the `CacheDiff` trait to simulate a world where we're storing a version of an architecture-dependent binary that we're installing:
 
 ```rust
 :::>> print.erb
@@ -106,7 +106,7 @@ CODE
 %>
 ```
 
-With that definition out of the way, we can assert the interface behaves as expected. Add this test case:
+With that definition out of the way, we can assert that the interface behaves as expected. Add this test case:
 
 ```rust
 :::>> print.erb
@@ -134,7 +134,7 @@ CODE
 %>
 ```
 
-It's usually a good idea to assert both positive an negative behavior. Add this test case:
+It's usually a good idea to assert both positive and negative behavior. Add this test case:
 
 ```rust
 :::>> print.erb
@@ -171,6 +171,6 @@ And when you run tests, it should look a little like this:
 
 ## Why Derive when we can walk?
 
-The `CacheDiff` trait isn't too complicated to implement manually, but there's a lot of repetition in the code. There's also room to mess up the output like inverting the version number position or comparing one field and displaying values for a different one.
+The `CacheDiff` trait isn't too complicated to implement manually, but the code is repetitive. There's also room to mess up the output, like inverting the version number position or comparing one field and displaying values for a different one.
 
-A derive macro would reduce repetition and eliminate silly logic errors while providing us with sensible defaults.
+A derive macro would reduce repetition and eliminate silly logic errors while providing sensible defaults.
