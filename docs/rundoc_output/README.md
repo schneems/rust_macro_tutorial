@@ -120,6 +120,7 @@ Once the project is set up, we'll start by defining a public trait:
 ```rust
 // File: `cache_diff/src/lib.rs`
 
+
 // Code
 pub trait CacheDiff {
     fn diff(&self, old: &Self) -> Vec<String>;
@@ -139,6 +140,7 @@ Here's a test showing how a developer might manually implement this trait. First
 
 ```rust
 // File: `cache_diff/src/lib.rs`
+
 
 // Code
 // ...
@@ -181,6 +183,7 @@ With that definition out of the way, we can assert that the interface behaves as
 ```rust
 // File: `cache_diff/src/lib.rs`
 
+
 // Code
 // ...
 
@@ -219,6 +222,7 @@ It's usually a good idea to assert both positive and negative behavior. Add this
 ```rust
 // File: `cache_diff/src/lib.rs`
 
+
 // Code
 // ...
 
@@ -251,6 +255,7 @@ Your file should now look like this:
 
 ```rust
 // File: `cache_diff/src/lib.rs`
+
 
 // Code
 pub trait CacheDiff {
@@ -329,14 +334,14 @@ And when you run tests, it should look a little like this:
 
 ```
 $ cargo test
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive)
-   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.26s
+   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff_derive)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.23s
      Running unittests src/lib.rs (target/debug/deps/cache_diff-2716017b25caff21)
 
 running 2 tests
-test tests::test_changed_metadata ... ok
 test tests::test_unchanged_metadata ... ok
+test tests::test_changed_metadata ... ok
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
@@ -401,7 +406,9 @@ Now, we need to add an entry point and define some constants we'll use in a bit.
 
 
 // File: `cache_diff_derive/src/lib.rs`
+
 use proc_macro::TokenStream;
+
 // Code
 pub(crate) const NAMESPACE: &str = "cache_diff";
 pub(crate) const MACRO_NAME: &str = "CacheDiff";
@@ -478,8 +485,10 @@ Now we re-export that macro right next to our trait when the "derive" feature is
 
 ```rust
 // File: `cache_diff/src/lib.rs`
+
 #[cfg(feature = "derive")]
 pub use cache_diff_derive::CacheDiff;
+
 // Code
 // ...
 ```
@@ -489,8 +498,10 @@ The file should look like this:
 
 ```rust
 // File: `cache_diff/src/lib.rs`
+
 #[cfg(feature = "derive")]
 pub use cache_diff_derive::CacheDiff;
+
 // Code
 pub trait CacheDiff {
     fn diff(&self, old: &Self) -> Vec<String>;
@@ -585,6 +596,7 @@ This struct has one field named `version` with a value of `String` type. We need
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
 
+
 // Code
 /// Field (i.e. `name: String`) of a container (struct) and its parsed attributes
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
@@ -608,8 +620,10 @@ We must `mod` it from the `lib.rs` to use this code. Do that now:
 
 ```rust
 // File: `cache_diff_derive/src/lib.rs`
+
 mod parse_field;
 // Use ...
+
 
 // Code
 // ...
@@ -623,8 +637,10 @@ Now that we've got somewhere to put data, we need some logic to build it. Add th
 
 
 // File: `cache_diff_derive/src/parse_field.rs`
+
 use crate::MACRO_NAME;
 use syn::spanned::Spanned;
+
 // Code
 // ...
 impl ParseField {
@@ -691,8 +707,10 @@ This is our code so far:
 
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
+
 use crate::MACRO_NAME;
 use syn::spanned::Spanned;
+
 // Code
 /// Field (i.e. `name: String`) of a container (struct) and its parsed attributes
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
@@ -781,7 +799,9 @@ The container in this code is `Metadata` as it contains our fields. In proc-macr
 
 
 // File: `cache_diff_derive/src/parse_container.rs`
+
 use crate::parse_field::ParseField;
+
 // Code
 /// Container (i.e. struct Metadata { ... }) and its parsed attributes
 /// i.e. `#[cache_diff( ... )]`
@@ -804,9 +824,11 @@ Don't forget to let our project know about the new file by adding a `mod` declar
 
 ```rust
 // File: `cache_diff_derive/src/lib.rs`
+
 // Mod ...
 mod parse_container;
 // Use ...
+
 
 // Code
 // ...
@@ -817,8 +839,10 @@ Now that we've got a place to hold the data let's build it from the input AST. A
 
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
+
 // Use ...
 use crate::MACRO_NAME;
+
 // Code
 // ...
 impl ParseContainer {
@@ -902,7 +926,9 @@ If that parsing is successful, then we'll have our data! But not so fast **speed
 ```rust
 
 // File: `cache_diff_derive/src/parse_container.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -953,11 +979,13 @@ We will now use these container and field structs that we created to implement o
 
 
 // File: `cache_diff_derive/src/lib.rs`
+
 // Mod ...
 
 // Use ...
 use parse_container::ParseContainer;
 use parse_field::ParseField;
+
 // Code
 // ...
 ```
@@ -967,9 +995,11 @@ Replace our prior cache logic:
 
 ```rust
 // File: `cache_diff_derive/src/lib.rs`
+
 // Mod ...
 
 // Use ...
+
 
 // Code
 // ...
@@ -986,9 +1016,11 @@ With with these new contents:
 
 ```rust
 // File: `cache_diff_derive/src/lib.rs`
+
 // Mod ...
 
 // Use ...
+
 
 // Code
 // ...
@@ -1137,7 +1169,9 @@ We can use Rust's doctests to validate the happy path. At the top of `cache_diff
 //!     diff
 //! );
 //! ```
+
 // Use ...
+
 
 // Code
 // ...
@@ -1290,8 +1324,10 @@ $ cat cache_diff/src/lib.rs
 //!     diff
 //! );
 //! ```
+
 #[cfg(feature = "derive")]
 pub use cache_diff_derive::CacheDiff;
+
 // Code
 pub trait CacheDiff {
     fn diff(&self, old: &Self) -> Vec<String>;
@@ -1364,11 +1400,13 @@ mod tests {
 }
 $ cat cache_diff_derive/src/lib.rs
 // File: `cache_diff_derive/src/lib.rs`
+
 mod parse_field;
 mod parse_container;
 use proc_macro::TokenStream;
 use parse_container::ParseContainer;
 use parse_field::ParseField;
+
 // Code
 pub(crate) const NAMESPACE: &str = "cache_diff";
 pub(crate) const MACRO_NAME: &str = "CacheDiff";
@@ -1419,10 +1457,13 @@ fn create_cache_diff(item: proc_macro2::TokenStream)
         }
     })
 }
+$ cat cache_diff_derive/src/shared.rs
 $ cat cache_diff_derive/src/parse_field.rs
 // File: `cache_diff_derive/src/parse_field.rs`
+
 use crate::MACRO_NAME;
 use syn::spanned::Spanned;
+
 // Code
 /// Field (i.e. `name: String`) of a container (struct) and its parsed attributes
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
@@ -1483,8 +1524,10 @@ mod tests {
 }
 $ cat cache_diff_derive/src/parse_container.rs
 // File: `cache_diff_derive/src/parse_container.rs`
+
 use crate::parse_field::ParseField;
 use crate::MACRO_NAME;
+
 // Code
 /// Container (i.e. struct Metadata { ... }) and its parsed attributes
 /// i.e. `#[cache_diff( ... )]`
@@ -1665,7 +1708,7 @@ fn main() {
 Then it will produce this error:
 
 ```
-   Compiling lol v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/lol)
+   Compiling lol v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/lol)
 error[E0277]: `PathBuf` doesn't implement `std::fmt::Display`
  --> src/main.rs:4:5
   |
@@ -1763,7 +1806,6 @@ Like before, we'll represent this state in code and fill out the rest of our pro
 
 ```
 $ cargo add strum@0.27.1 --package cache_diff_derive --features derive
-$ cargo add strum@0.27.1 --package cache_diff_derive --features derive --offline
 ```
 <!-- STOP. This document is autogenerated. Do not manually modify. See the top of the doc for more details. -->
 
@@ -1791,11 +1833,11 @@ proc-macro = true
 Now, define an enum that will hold each of our attribute variants. Add this code:
 
 ```rust
-
 // File: `cache_diff_derive/src/parse_field.rs`
+
 // Use ...
 use std::str::FromStr;
-use strum::IntoEnumIterator;
+
 // Code
 // ...
 /// A single attribute
@@ -1823,8 +1865,10 @@ Attributes parse logic is similar so that we can reuse some of the logic in our 
 
 ```rust
 // File: `cache_diff_derive/src/shared.rs`
+
 use crate::{MACRO_NAME, NAMESPACE};
 use std::{collections::HashMap, fmt::Display, str::FromStr};
+
 // Code
 /// Parses one bare word like "rename" for any iterable enum, and that's it
 ///
@@ -1858,9 +1902,11 @@ Make sure your project knows about this new code by adding this file:
 
 ```rust
 // File: `cache_diff_derive/src/lib.rs`
+
 // Mod ...
 mod shared;
 // Use ...
+
 
 // Code
 // ...
@@ -1871,7 +1917,9 @@ We will implement the `syn::parse::Parse` trait to allow syn to parse a stream o
 
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -1900,7 +1948,9 @@ To see it in action, add a test now:
 
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -1968,7 +2018,9 @@ We will use this capability to generate an implementation of `syn::parse::Parse`
 
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -2047,7 +2099,9 @@ With all that in place, you can add a test and validate that we can parse it int
 
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -2081,7 +2135,9 @@ To parse a comma-separated set of attributes, add this code:
 
 ```rust
 // File: `cache_diff_derive/src/shared.rs`
+
 // Use ...
+use std::collections::VecDeque;
 
 // Code
 // ...
@@ -2090,15 +2146,28 @@ where
     T: syn::parse::Parse,
 {
     let mut attributes = Vec::new();
+    let mut errors = VecDeque::new();
     for attr in attrs.iter().filter(|attr| attr.path().is_ident(NAMESPACE)) {
-        for attribute in attr.parse_args_with(
-            syn::punctuated::Punctuated::<T, syn::Token![,]>::parse_terminated,
-        )? {
-            attributes.push(attribute)
+        match attr
+            .parse_args_with(syn::punctuated::Punctuated::<T, syn::Token![,]>::parse_terminated)
+        {
+            Ok(attrs) => {
+                for attribute in attrs {
+                    attributes.push(attribute);
+                }
+            }
+            Err(error) => errors.push_back(error),
         }
     }
 
-    Ok(attributes)
+    if let Some(mut error) = errors.pop_front() {
+        for e in errors {
+            error.combine(e);
+        }
+        Err(error)
+    } else {
+        Ok(attributes)
+    }
 }
 ```
 <!-- STOP. This document is autogenerated. Do not manually modify. See the top of the doc for more details. -->
@@ -2113,20 +2182,15 @@ This code pulls out attributes on a field and iterates over them. The `syn` code
 
 We use the [`syn::Attribute::parse_args_with`](https://docs.rs/syn/latest/syn/struct.Attribute.html#method.parse_args_with) function, which takes a parser. We've implemented two parsers: `KnownAttribute` and `ParseAttribute`. But we need something that can handle a comma-separated set of attributes, so we turn to the pre-built `syn::punctuated::Punctuated` parser, which is a parser combinator, meaning it takes in other parsers as its input. In our case, we're telling it to build a set of `ParseAttribute` enums and use commas (`syn::Token![,]`) to separate them. We then call `parse_terminated` on this parser combinator, which returns an iterator of item type `ParseAttribute` that we can use to build and return our `Vec<ParseAttribute>`:
 
-```rust
-        for attribute in attr.parse_args_with(
-            syn::punctuated::Punctuated::<T, syn::Token![,]>::parse_terminated,
-        )? {
-            attributes.push(attribute)
-        }
-```
-<!-- STOP. This document is autogenerated. Do not manually modify. See the top of the doc for more details. -->
+
 
 And add a test for the behavior:
 
 ```rust
 // File: `cache_diff_derive/src/shared.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -2160,7 +2224,9 @@ Add this code:
 
 ```rust
 // File: `cache_diff_derive/src/shared.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -2189,7 +2255,9 @@ This new `WithSpan` struct can hold any `impl syn::parse::Parse` value, such as 
 
 ```rust
 // File: `cache_diff_derive/src/shared.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -2198,7 +2266,7 @@ This new `WithSpan` struct can hold any `impl syn::parse::Parse` value, such as 
 mod tests {
     // Test use
     // ...
-use super::*;
+
     // Test code
     // ...
     #[test]
@@ -2223,11 +2291,36 @@ use super::*;
 ```
 <!-- STOP. This document is autogenerated. Do not manually modify. See the top of the doc for more details. -->
 
+You might notice that we're not returning from a failure early in our code, instead we're building up a `VecDeque<syn::Error>` and using that to combine multiple errors into one before returning. While programmers of dynamic languages like Python and Ruby are used to fixing an error only to see a brand new error, Rust developers expect the compiler to show them as many problems as possible at once. This error accumulation approach allows us to emit multiple errors from multiple attribute lines. For example:
+
+```
+error: Unknown cache_diff attribute: `unknown`. Must be one of `rename`, `display`, `ignore`
+ --> tests/fails/multiple_unknown.rs:5:18
+  |
+5 |     #[cache_diff(unknown)]
+  |                  ^^^^^^^
+
+error: Unknown cache_diff attribute: `unknown`. Must be one of `rename`, `display`, `ignore`
+ --> tests/fails/multiple_unknown.rs:6:18
+  |
+6 |     #[cache_diff(unknown = "value")]
+  |                  ^^^^^^^
+
+error: Unknown cache_diff attribute: `unknown`. Must be one of `rename`, `display`, `ignore`
+ --> tests/fails/multiple_unknown.rs:7:18
+  |
+7 |     #[cache_diff(unknown = function)]
+  |                  ^^^^^^^
+```
+<!-- STOP. This document is autogenerated. Do not manually modify. See the top of the doc for more details. -->
+
 Now, we have the building blocks for a generic function with the properties we want. Add this code now:
 
 ```rust
 // File: `cache_diff_derive/src/shared.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -2242,22 +2335,35 @@ where
     T::Discriminant: Eq + Display + std::hash::Hash + Copy,
 {
     let mut seen = HashMap::new();
+    let mut errors = VecDeque::new();
     let parsed_attributes = parse_attrs::<WithSpan<T>>(attrs)?;
     for attribute in parsed_attributes {
         let WithSpan(ref parsed, span) = attribute;
         let key = parsed.discriminant();
         if let Some(WithSpan(_, prior)) = seen.insert(key, attribute) {
-            let mut error =
-                syn::Error::new(span, format!("{MACRO_NAME} duplicate attribute: `{key}`"));
-            error.combine(syn::Error::new(
-                prior,
-                format!("previously `{key}` defined here"),
-            ));
-            return Err(error);
+            errors.push_back(
+                syn::Error::new(
+                    span,
+                    format!("{MACRO_NAME} duplicate attribute: `{key}`")
+                )
+            );
+            errors.push_back(
+                syn::Error::new(
+                    prior,
+                    format!("previously `{key}` defined here"),
+                )
+            );
         }
     }
 
-    Ok(seen)
+    if let Some(mut error) = errors.pop_front() {
+        for e in errors {
+            error.combine(e);
+        }
+        Err(error)
+    } else {
+        Ok(seen)
+    }
 }
 ```
 <!-- STOP. This document is autogenerated. Do not manually modify. See the top of the doc for more details. -->
@@ -2290,18 +2396,23 @@ We try inserting the attribute into the HashMap based on the discriminant key:
 
 ```rust
         if let Some(WithSpan(_, prior)) = seen.insert(key, attribute) {
-            let mut error =
-                syn::Error::new(span, format!("{MACRO_NAME} duplicate attribute: `{key}`"));
-            error.combine(syn::Error::new(
-                prior,
-                format!("previously `{key}` defined here"),
-            ));
-            return Err(error);
+            errors.push_back(
+                syn::Error::new(
+                    span,
+                    format!("{MACRO_NAME} duplicate attribute: `{key}`")
+                )
+            );
+            errors.push_back(
+                syn::Error::new(
+                    prior,
+                    format!("previously `{key}` defined here"),
+                )
+            );
         }
 ```
 <!-- STOP. This document is autogenerated. Do not manually modify. See the top of the doc for more details. -->
 
-If a prior entry exists, it represents an error, as each attribute should only have one representation. Here, we are using [syn::Error::combine](https://docs.rs/syn/latest/syn/struct.Error.html#method.combine) to create two errors effectively, the first points at the most recent attribute we tried to add, while the last points at the attribute that was already in the HashMap. The result will look something like:
+If a prior entry exists, it represents an error, as each attribute should only have one representation. The first `syn::Error` added points at the most recent attribute we tried to add, while the second error added points at the attribute that was already in the HashMap. The result will look something like:
 
 ```
 error: CacheDiff duplicate attribute: `rename`
@@ -2322,7 +2433,9 @@ Now, I want to ensure that all of these attributes in our `HashMap` go somewhere
 
 ```rust
 // File: `cache_diff_derive/src/shared.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -2354,7 +2467,9 @@ At this point, we've added the ability to extract any cache_diff attributes from
 
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -2378,7 +2493,9 @@ With with these new contents:
 
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -2410,7 +2527,9 @@ Add this helper function now:
 
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -2431,8 +2550,10 @@ Import the helper struct:
 
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
+
 // Use ...
 use crate::shared::WithSpan;
+
 // Code
 // ...
 ```
@@ -2442,7 +2563,9 @@ Replace this code:
 
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -2472,12 +2595,17 @@ With with these new contents:
 
 ```rust
 // File: `cache_diff_derive/src/parse_field.rs`
+
 // Use ...
+
 
 // Code
 // ...
 impl ParseField {
     pub(crate) fn from_field(field: &syn::Field) -> Result<Self, syn::Error> {
+        let mut rename = None;
+        let mut ignore = None;
+        let mut display = None;
         let ident = field.ident.clone().ok_or_else(|| {
             syn::Error::new(
                 field.span(),
@@ -2485,22 +2613,29 @@ impl ParseField {
             )
         })?;
 
-        let mut lookup = crate::shared::attribute_lookup::<ParseAttribute>(&field.attrs)?;
-        let name = lookup
-            .remove(&KnownAttribute::rename)
-            .map(WithSpan::into_inner)
-            .map(|parsed| match parsed {
-                ParseAttribute::rename(inner) => inner,
-                _ => unreachable!(),
-            })
+        for (_, WithSpan(attribute, span)) in
+            crate::shared::attribute_lookup::<ParseAttribute>(&field.attrs)?.drain()
+        {
+            match attribute {
+                ParseAttribute::rename(inner) => rename = Some(inner),
+                ParseAttribute::ignore(inner) => ignore = Some((inner, span)),
+                ParseAttribute::display(inner) => display = Some(inner),
+            }
+        }
+
+        if let Some((_, span)) = ignore {
+            if display.is_some() || rename.is_some() {
+                return Err(syn::Error::new(
+                        span,
+                        format!("The cache_diff attribute `{}` renders other attributes inactive, remove additional attributes", KnownAttribute::ignore)
+                    )
+                );
+            }
+        }
+
+        let name = rename
             .unwrap_or_else(|| ident.to_string().replace("_", " "));
-        let display = lookup
-            .remove(&KnownAttribute::display)
-            .map(WithSpan::into_inner)
-            .map(|parsed| match parsed {
-                ParseAttribute::display(inner) => inner,
-                _ => unreachable!(),
-            })
+        let display = display
             .unwrap_or_else(|| {
                 if is_pathbuf(&field.ty) {
                     syn::parse_str("std::path::Path::display")
@@ -2510,14 +2645,7 @@ impl ParseField {
                         .expect("std::convert::identity parses as a syn::Path")
                 }
             });
-        let ignore = lookup
-            .remove(&KnownAttribute::ignore)
-            .map(WithSpan::into_inner)
-            .map(|parsed| match parsed {
-                ParseAttribute::ignore(inner) => inner,
-                _ => unreachable!(),
-            });
-        crate::shared::check_empty(lookup)?;
+        let ignore = ignore.map(|(ignore, _)| ignore);
 
         Ok(ParseField {
             ident,
@@ -2529,12 +2657,17 @@ impl ParseField {
 }
 
 
-
 ```
 
-Each attribute we support is queried. If it doesn't exist, we set a default and keep going until all information needed to build the struct is present. If we parse an attribute into the lookup but forget to remove it, an exception is raised that points to the attribute that we forgot to wire up.
+This code iterates over all parsed attributes to pull out values we care about from the `HashMap` via `drain()`:
 
-It might seem like we added a lot of code, but most of this boils down to:
+
+
+From there we check for possible developer mistakes by raising an error if `ignore` is detected with either `display` or `rename`:
+
+
+
+Then default values are defined and a `ParseField` is returned. It might seem like we added a lot of code, but most of this boils down to:
 
 - Define all valid attributes in a `ParseAttribute` enum with a `KnownAttribute` discriminant
 - Implement `syn::parse::Parse` for these enums
@@ -2544,7 +2677,9 @@ It might seem like we added a lot of code, but most of this boils down to:
 
 Sometimes, it's easier to go the other direction. You can define the fields you need for `ParseField` and then figure out the API you want to make to support it, but from a testing perspective, it's easier to start with smaller parsers and gradually combine them to build bigger ones.
 
-We're done with the field modifications but haven't implemented the logic in our primary derive function yet. We will do that shortly. We also haven't added a test for this new syntax. Previously we used integration tests in the form of doctests, however I want the ability to assert failing behavior, such as an attribute that's defined twice, and I want to assert that we're pointing at the spans we expect. To do that, we will add the [`try_build`](https://crates.io/crates/trybuild) crate, which can help us visualize compiler errors that our users will see.
+We're done with the field modifications but haven't implemented the logic in our primary derive function yet. We will do that shortly. We also haven't added a test for this new syntax.
+
+Previously we used integration tests in the form of doctests, however I want the ability to assert failing behavior, such as an attribute that's defined twice, and I want to assert that we're pointing at the spans we expect. To do that, we will add the [`try_build`](https://crates.io/crates/trybuild) crate, which can help us visualize compiler errors that our users will see.
 
 ```
 $ cargo add --dev trybuild@1.0.104 --package cache_diff
@@ -2609,7 +2744,7 @@ Now add a compilation failure case.
 
 In file `cache_diff/tests/fails/duplicate_attribute.rs` write:
 
-```
+```rust
 use cache_diff::CacheDiff;
 
 #[derive(CacheDiff)]
@@ -2640,6 +2775,47 @@ error: previously `rename` defined here
 ```
 <!-- STOP. This document is autogenerated. Do not manually modify. See the top of the doc for more details. -->
 
+We also want to ensure that our error logic won't stop on the first attribute but will instead store errors after attempting to parse all attributes:
+
+```rust
+use cache_diff::CacheDiff;
+
+#[derive(CacheDiff)]
+struct CustomDiffFn {
+    #[cache_diff(unknown)]
+    #[cache_diff(unknown = "value")]
+    #[cache_diff(unknown = function)]
+    name: String,
+}
+
+fn main() {}
+```
+<!-- STOP. This document is autogenerated. Do not manually modify. See the top of the doc for more details. -->
+
+And assert the output of that failure case:
+
+```
+$ cat cache_diff/tests/fails/multiple_unknown.stderr
+error: Unknown cache_diff attribute: `unknown`. Must be one of `rename`, `display`, `ignore`
+ --> tests/fails/multiple_unknown.rs:5:18
+  |
+5 |     #[cache_diff(unknown)]
+  |                  ^^^^^^^
+
+error: Unknown cache_diff attribute: `unknown`. Must be one of `rename`, `display`, `ignore`
+ --> tests/fails/multiple_unknown.rs:6:18
+  |
+6 |     #[cache_diff(unknown = "value")]
+  |                  ^^^^^^^
+
+error: Unknown cache_diff attribute: `unknown`. Must be one of `rename`, `display`, `ignore`
+ --> tests/fails/multiple_unknown.rs:7:18
+  |
+7 |     #[cache_diff(unknown = function)]
+  |                  ^^^^^^^
+```
+<!-- STOP. This document is autogenerated. Do not manually modify. See the top of the doc for more details. -->
+
 Verify tests are all passing:
 
 ```
@@ -2663,7 +2839,9 @@ $ exa --tree --git-ignore .
 │     ├── compilation_tests.rs
 │     └── fails
 │        ├── duplicate_attribute.rs
-│        └── duplicate_attribute.stderr
+│        ├── duplicate_attribute.stderr
+│        ├── multiple_unknown.rs
+│        └── multiple_unknown.stderr
 ├── cache_diff_derive
 │  ├── Cargo.toml
 │  └── src
@@ -2735,8 +2913,10 @@ $ cat cache_diff/src/lib.rs
 //!     diff
 //! );
 //! ```
+
 #[cfg(feature = "derive")]
 pub use cache_diff_derive::CacheDiff;
+
 // Code
 pub trait CacheDiff {
     fn diff(&self, old: &Self) -> Vec<String>;
@@ -2809,12 +2989,14 @@ mod tests {
 }
 $ cat cache_diff_derive/src/lib.rs
 // File: `cache_diff_derive/src/lib.rs`
+
 mod parse_field;
 mod parse_container;
 mod shared;
 use proc_macro::TokenStream;
 use parse_container::ParseContainer;
 use parse_field::ParseField;
+
 // Code
 pub(crate) const NAMESPACE: &str = "cache_diff";
 pub(crate) const MACRO_NAME: &str = "CacheDiff";
@@ -2865,13 +3047,193 @@ fn create_cache_diff(item: proc_macro2::TokenStream)
         }
     })
 }
+$ cat cache_diff_derive/src/shared.rs
+// File: `cache_diff_derive/src/shared.rs`
+
+use crate::{MACRO_NAME, NAMESPACE};
+use std::{collections::HashMap, fmt::Display, str::FromStr};
+use std::collections::VecDeque;
+
+// Code
+/// Parses one bare word like "rename" for any iterable enum, and that's it
+///
+/// Won't parse an equal sign or anything else
+pub(crate) fn known_attribute<T>(identity: &syn::Ident) -> syn::Result<T>
+where
+    T: FromStr + strum::IntoEnumIterator + Display,
+{
+    let name_str = &identity.to_string();
+    T::from_str(name_str).map_err(|_| {
+        syn::Error::new(
+            identity.span(),
+            format!(
+                "Unknown {NAMESPACE} attribute: `{identity}`. Must be one of {valid_keys}",
+                valid_keys = T::iter()
+                    .map(|key| format!("`{key}`"))
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            ),
+        )
+    })
+}
+
+fn parse_attrs<T>(attrs: &[syn::Attribute]) -> Result<Vec<T>, syn::Error>
+where
+    T: syn::parse::Parse,
+{
+    let mut attributes = Vec::new();
+    let mut errors = VecDeque::new();
+    for attr in attrs.iter().filter(|attr| attr.path().is_ident(NAMESPACE)) {
+        match attr
+            .parse_args_with(syn::punctuated::Punctuated::<T, syn::Token![,]>::parse_terminated)
+        {
+            Ok(attrs) => {
+                for attribute in attrs {
+                    attributes.push(attribute);
+                }
+            }
+            Err(error) => errors.push_back(error),
+        }
+    }
+
+    if let Some(mut error) = errors.pop_front() {
+        for e in errors {
+            error.combine(e);
+        }
+        Err(error)
+    } else {
+        Ok(attributes)
+    }
+}
+
+/// Helper type for parsing a type and preserving the original span
+///
+/// Used with [syn::punctuated::Punctuated] to capture the inner span of an attribute.
+#[derive(Debug)]
+pub(crate) struct WithSpan<T>(pub(crate) T, pub(crate) proc_macro2::Span);
+
+impl<T> WithSpan<T> {
+    pub(crate) fn into_inner(self) -> T {
+        self.0
+    }
+}
+
+impl<T: syn::parse::Parse> syn::parse::Parse for WithSpan<T> {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let span = input.span();
+        Ok(WithSpan(input.parse()?, span))
+    }
+}
+
+/// Parses all attributes and returns a lookup with the parsed value and span information where it was found
+///
+/// - Guarantees attributes are not duplicated
+pub(crate) fn attribute_lookup<T>(
+    attrs: &[syn::Attribute],
+) -> Result<HashMap<T::Discriminant, WithSpan<T>>, syn::Error>
+where
+    T: strum::IntoDiscriminant + syn::parse::Parse,
+    T::Discriminant: Eq + Display + std::hash::Hash + Copy,
+{
+    let mut seen = HashMap::new();
+    let mut errors = VecDeque::new();
+    let parsed_attributes = parse_attrs::<WithSpan<T>>(attrs)?;
+    for attribute in parsed_attributes {
+        let WithSpan(ref parsed, span) = attribute;
+        let key = parsed.discriminant();
+        if let Some(WithSpan(_, prior)) = seen.insert(key, attribute) {
+            errors.push_back(
+                syn::Error::new(
+                    span,
+                    format!("{MACRO_NAME} duplicate attribute: `{key}`")
+                )
+            );
+            errors.push_back(
+                syn::Error::new(
+                    prior,
+                    format!("previously `{key}` defined here"),
+                )
+            );
+        }
+    }
+
+    if let Some(mut error) = errors.pop_front() {
+        for e in errors {
+            error.combine(e);
+        }
+        Err(error)
+    } else {
+        Ok(seen)
+    }
+}
+
+pub(crate) fn check_empty<T>(lookup: HashMap<T::Discriminant, WithSpan<T>>) -> syn::Result<()>
+where
+    T: strum::IntoDiscriminant,
+    T::Discriminant: Display + std::hash::Hash,
+{
+    if lookup.is_empty() {
+        Ok(())
+    } else {
+        let mut error = syn::Error::new(
+            proc_macro2::Span::call_site(),
+            "Internal error: The developer forgot to implement some logic",
+        );
+        for (key, WithSpan(_, span)) in lookup.into_iter() {
+            error.combine(syn::Error::new(
+                span,
+                format!("Attribute `{key}` parsed but not used"),
+            ));
+        }
+        Err(error)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // Test use
+    use super::*;
+    // Test code
+    #[test]
+    fn test_parse_attrs_vec_demo() {
+        let field: syn::Field = syn::parse_quote! {
+            #[cache_diff("Ruby version")]
+            name: String
+        };
+
+        assert_eq!(
+            vec![syn::parse_str::<syn::LitStr>(r#""Ruby version""#).unwrap()],
+            parse_attrs::<syn::LitStr>(&field.attrs).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_parse_attrs_with_span_vec_demo() {
+        let field: syn::Field = syn::parse_quote! {
+            #[cache_diff("Ruby version")]
+            name: String
+        };
+
+        assert_eq!(
+            &syn::parse_str::<syn::LitStr>(r#""Ruby version""#).unwrap(),
+            parse_attrs::<WithSpan<syn::LitStr>>(&field.attrs)
+                .unwrap()
+                .into_iter()
+                .map(WithSpan::into_inner)
+                .collect::<Vec<_>>()
+                .first()
+                .unwrap()
+        );
+    }
+}
 $ cat cache_diff_derive/src/parse_field.rs
 // File: `cache_diff_derive/src/parse_field.rs`
+
 use crate::MACRO_NAME;
 use syn::spanned::Spanned;
 use std::str::FromStr;
-use strum::IntoEnumIterator;
 use crate::shared::WithSpan;
+
 // Code
 /// Field (i.e. `name: String`) of a container (struct) and its parsed attributes
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
@@ -2892,6 +3254,9 @@ pub(crate) struct ParseField {
 
 impl ParseField {
     pub(crate) fn from_field(field: &syn::Field) -> Result<Self, syn::Error> {
+        let mut rename = None;
+        let mut ignore = None;
+        let mut display = None;
         let ident = field.ident.clone().ok_or_else(|| {
             syn::Error::new(
                 field.span(),
@@ -2899,22 +3264,29 @@ impl ParseField {
             )
         })?;
 
-        let mut lookup = crate::shared::attribute_lookup::<ParseAttribute>(&field.attrs)?;
-        let name = lookup
-            .remove(&KnownAttribute::rename)
-            .map(WithSpan::into_inner)
-            .map(|parsed| match parsed {
-                ParseAttribute::rename(inner) => inner,
-                _ => unreachable!(),
-            })
+        for (_, WithSpan(attribute, span)) in
+            crate::shared::attribute_lookup::<ParseAttribute>(&field.attrs)?.drain()
+        {
+            match attribute {
+                ParseAttribute::rename(inner) => rename = Some(inner),
+                ParseAttribute::ignore(inner) => ignore = Some((inner, span)),
+                ParseAttribute::display(inner) => display = Some(inner),
+            }
+        }
+
+        if let Some((_, span)) = ignore {
+            if display.is_some() || rename.is_some() {
+                return Err(syn::Error::new(
+                        span,
+                        format!("The cache_diff attribute `{}` renders other attributes inactive, remove additional attributes", KnownAttribute::ignore)
+                    )
+                );
+            }
+        }
+
+        let name = rename
             .unwrap_or_else(|| ident.to_string().replace("_", " "));
-        let display = lookup
-            .remove(&KnownAttribute::display)
-            .map(WithSpan::into_inner)
-            .map(|parsed| match parsed {
-                ParseAttribute::display(inner) => inner,
-                _ => unreachable!(),
-            })
+        let display = display
             .unwrap_or_else(|| {
                 if is_pathbuf(&field.ty) {
                     syn::parse_str("std::path::Path::display")
@@ -2924,14 +3296,7 @@ impl ParseField {
                         .expect("std::convert::identity parses as a syn::Path")
                 }
             });
-        let ignore = lookup
-            .remove(&KnownAttribute::ignore)
-            .map(WithSpan::into_inner)
-            .map(|parsed| match parsed {
-                ParseAttribute::ignore(inner) => inner,
-                _ => unreachable!(),
-            });
-        crate::shared::check_empty(lookup)?;
+        let ignore = ignore.map(|(ignore, _)| ignore);
 
         Ok(ParseField {
             ident,
@@ -2941,7 +3306,6 @@ impl ParseField {
         })
     }
 }
-
 
 /// A single attribute
 #[derive(strum::EnumDiscriminants, Debug, PartialEq)]
@@ -3064,8 +3428,10 @@ mod tests {
 }
 $ cat cache_diff_derive/src/parse_container.rs
 // File: `cache_diff_derive/src/parse_container.rs`
+
 use crate::parse_field::ParseField;
 use crate::MACRO_NAME;
+
 // Code
 /// Container (i.e. struct Metadata { ... }) and its parsed attributes
 /// i.e. `#[cache_diff( ... )]`
@@ -3144,9 +3510,11 @@ We'll define an enum to hold each container attribute variant as we did with fie
 ```rust
 
 // File: `cache_diff_derive/src/parse_container.rs`
+
 // Use ...
 use std::str::FromStr;
 use strum::IntoEnumIterator;
+
 // Code
 // ...
 /// A single attribute
@@ -3166,8 +3534,10 @@ We will go ahead and add an implementation of `syn::parse::Parse` for `KnownAttr
 
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
+
 // Use ...
 use crate::NAMESPACE;
+
 // Code
 // ...
 impl syn::parse::Parse for KnownAttribute {
@@ -3183,7 +3553,9 @@ Now, implement the parsing logic. Add this code:
 
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -3203,7 +3575,9 @@ Verify your intuition (and my claims) with some tests. Add this test code:
 
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -3267,7 +3641,9 @@ Now, we can parse attributes for containers. Let's add that information to our c
 
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -3292,7 +3668,9 @@ With with these new contents:
 
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -3319,8 +3697,10 @@ Import the helper struct:
 
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
+
 // Use ...
 use crate::shared::WithSpan;
+
 // Code
 // ...
 ```
@@ -3330,7 +3710,9 @@ Now, update the logic for building the container. Replace this code:
 
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -3366,7 +3748,9 @@ With with these new contents:
 
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -3458,7 +3842,9 @@ I consider the error experience, how our interfaces behave in failure scenarios,
 
 ```rust
 // File: `cache_diff_derive/src/parse_container.rs`
+
 // Use ...
+
 
 // Code
 // ...
@@ -3510,9 +3896,11 @@ With the parsing logic contained within `ParseContainer` and `ParseField`, we ca
 
 ```rust
 // File: `cache_diff_derive/src/lib.rs`
+
 // Mod ...
 
 // Use ...
+
 
 // Code
 // ...
@@ -3563,9 +3951,11 @@ With with these new contents:
 
 ```rust
 // File: `cache_diff_derive/src/lib.rs`
+
 // Mod ...
 
 // Use ...
+
 
 // Code
 // ...
@@ -3657,7 +4047,9 @@ Add docs for `ignore` now:
 //!
 //! assert!(diff.is_empty());
 //! ```
+
 // Use ...
+
 
 // Code
 // ...
@@ -3687,7 +4079,9 @@ Add rename docs:
 //! assert_eq!("Ruby version (3.3.0 to 3.4.0)", diff.join(" "));
 //! ```
 //!
+
 // Use ...
+
 
 // Code
 // ...
@@ -3730,7 +4124,9 @@ Add display docs:
 //! assert_eq!("version (custom 3.3.0 to custom 3.4.0)", diff.join(" "));
 //! ```
 //!
+
 // Use ...
+
 
 // Code
 // ...
@@ -3794,7 +4190,9 @@ Add custom function docs:
 //! like "OS (ubuntu-22 to ubuntu-24)". Alternatively, you can use <https://github.com/schneems/magic_migrate> to
 //! re-arrange your struct to only have one field with a custom display.
 //!
+
 // Use ...
+
 
 // Code
 // ...
@@ -3807,120 +4205,96 @@ And make sure it works as expected:
 $ cargo clippy
     Checking unicode-ident v1.0.18
     Checking strum v0.27.1
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff_derive)
     Checking proc-macro2 v1.0.94
 warning: unused import: `std::str::FromStr`
- --> cache_diff_derive/src/parse_field.rs:4:5
+ --> cache_diff_derive/src/parse_field.rs:5:5
   |
-4 | use std::str::FromStr;
+5 | use std::str::FromStr;
   |     ^^^^^^^^^^^^^^^^^
   |
   = note: `#[warn(unused_imports)]` on by default
 
-warning: unused import: `strum::IntoEnumIterator`
- --> cache_diff_derive/src/parse_field.rs:5:5
-  |
-5 | use strum::IntoEnumIterator;
-  |     ^^^^^^^^^^^^^^^^^^^^^^^
-
 warning: unused import: `std::str::FromStr`
- --> cache_diff_derive/src/parse_container.rs:4:5
+ --> cache_diff_derive/src/parse_container.rs:5:5
   |
-4 | use std::str::FromStr;
+5 | use std::str::FromStr;
   |     ^^^^^^^^^^^^^^^^^
 
 warning: unused import: `strum::IntoEnumIterator`
- --> cache_diff_derive/src/parse_container.rs:5:5
+ --> cache_diff_derive/src/parse_container.rs:6:5
   |
-5 | use strum::IntoEnumIterator;
+6 | use strum::IntoEnumIterator;
   |     ^^^^^^^^^^^^^^^^^^^^^^^
 
-    Checking quote v1.0.39
+    Checking quote v1.0.40
     Checking syn v2.0.100
-warning: `cache_diff_derive` (lib) generated 4 warnings (run `cargo clippy --fix --lib -p cache_diff_derive` to apply 3 suggestions)
-    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff)
-warning: `cache_diff_derive` (lib) generated 4 warnings (4 duplicates)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.06s
+warning: `cache_diff_derive` (lib) generated 3 warnings (run `cargo clippy --fix --lib -p cache_diff_derive` to apply 2 suggestions)
+    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff)
+warning: `cache_diff_derive` (lib) generated 3 warnings (3 duplicates)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.07s
 $ cargo test
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff_derive)
 warning: unused import: `std::str::FromStr`
- --> cache_diff_derive/src/parse_field.rs:4:5
+ --> cache_diff_derive/src/parse_field.rs:5:5
   |
-4 | use std::str::FromStr;
+5 | use std::str::FromStr;
   |     ^^^^^^^^^^^^^^^^^
   |
   = note: `#[warn(unused_imports)]` on by default
 
-warning: unused import: `strum::IntoEnumIterator`
- --> cache_diff_derive/src/parse_field.rs:5:5
-  |
-5 | use strum::IntoEnumIterator;
-  |     ^^^^^^^^^^^^^^^^^^^^^^^
-
 warning: unused import: `std::str::FromStr`
- --> cache_diff_derive/src/parse_container.rs:4:5
-  |
-4 | use std::str::FromStr;
-  |     ^^^^^^^^^^^^^^^^^
-
-warning: unused import: `super::*`
-   --> cache_diff_derive/src/shared.rs:117:5
-    |
-117 | use super::*;
-    |     ^^^^^^^^
-
-warning: unused import: `strum::IntoEnumIterator`
  --> cache_diff_derive/src/parse_container.rs:5:5
   |
-5 | use strum::IntoEnumIterator;
+5 | use std::str::FromStr;
+  |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `strum::IntoEnumIterator`
+ --> cache_diff_derive/src/parse_container.rs:6:5
+  |
+6 | use strum::IntoEnumIterator;
   |     ^^^^^^^^^^^^^^^^^^^^^^^
 
-warning: `cache_diff_derive` (lib) generated 4 warnings (run `cargo fix --lib -p cache_diff_derive` to apply 3 suggestions)
-   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff)
-warning: `cache_diff_derive` (lib test) generated 5 warnings (4 duplicates) (run `cargo fix --lib -p cache_diff_derive --tests` to apply 1 suggestion)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.82s
-     Running unittests src/lib.rs (target/debug/deps/cache_diff-1e69b84e0de1a0a9)
+warning: `cache_diff_derive` (lib) generated 3 warnings (run `cargo fix --lib -p cache_diff_derive` to apply 2 suggestions)
+   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff)
+warning: `cache_diff_derive` (lib test) generated 3 warnings (3 duplicates)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.80s
+     Running unittests src/lib.rs (target/debug/deps/cache_diff-04be03b39cdb07e6)
 
 running 2 tests
-test tests::test_unchanged_metadata ... ok
 test tests::test_changed_metadata ... ok
+test tests::test_unchanged_metadata ... ok
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-     Running tests/compilation_tests.rs (target/debug/deps/compilation_tests-2d3369eb9b14b304)
+     Running tests/compilation_tests.rs (target/debug/deps/compilation_tests-b686eddd51c40766)
 
 running 2 tests
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff_derive)
 warning: unused import: `std::str::FromStr`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_field.rs:4:5
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff_derive/src/parse_field.rs:5:5
   |
-4 | use std::str::FromStr;
+5 | use std::str::FromStr;
   |     ^^^^^^^^^^^^^^^^^
   |
   = note: `#[warn(unused_imports)]` on by default
 
-warning: unused import: `strum::IntoEnumIterator`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_field.rs:5:5
-  |
-5 | use strum::IntoEnumIterator;
-  |     ^^^^^^^^^^^^^^^^^^^^^^^
-
 warning: unused import: `std::str::FromStr`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_container.rs:4:5
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff_derive/src/parse_container.rs:5:5
   |
-4 | use std::str::FromStr;
+5 | use std::str::FromStr;
   |     ^^^^^^^^^^^^^^^^^
 
 warning: unused import: `strum::IntoEnumIterator`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_container.rs:5:5
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff_derive/src/parse_container.rs:6:5
   |
-5 | use strum::IntoEnumIterator;
+6 | use strum::IntoEnumIterator;
   |     ^^^^^^^^^^^^^^^^^^^^^^^
 
-warning: `cache_diff_derive` (lib) generated 4 warnings (run `cargo fix --lib -p cache_diff_derive` to apply 3 suggestions)
-    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff)
-    Checking cache_diff-tests v0.0.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/target/tests/trybuild/cache_diff)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.49s
+warning: `cache_diff_derive` (lib) generated 3 warnings (run `cargo fix --lib -p cache_diff_derive` to apply 2 suggestions)
+    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff)
+    Checking cache_diff-tests v0.0.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/target/tests/trybuild/cache_diff)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.54s
 
 
 There are no trybuild tests enabled yet.
@@ -3928,57 +4302,52 @@ There are no trybuild tests enabled yet.
 
 test should_compile ... ok
 warning: unused import: `std::str::FromStr`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_field.rs:4:5
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff_derive/src/parse_field.rs:5:5
   |
-4 | use std::str::FromStr;
+5 | use std::str::FromStr;
   |     ^^^^^^^^^^^^^^^^^
   |
   = note: `#[warn(unused_imports)]` on by default
 
-warning: unused import: `strum::IntoEnumIterator`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_field.rs:5:5
-  |
-5 | use strum::IntoEnumIterator;
-  |     ^^^^^^^^^^^^^^^^^^^^^^^
-
 warning: unused import: `std::str::FromStr`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_container.rs:4:5
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff_derive/src/parse_container.rs:5:5
   |
-4 | use std::str::FromStr;
+5 | use std::str::FromStr;
   |     ^^^^^^^^^^^^^^^^^
 
 warning: unused import: `strum::IntoEnumIterator`
- --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/cache_diff_derive/src/parse_container.rs:5:5
+ --> /private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/cache_diff_derive/src/parse_container.rs:6:5
   |
-5 | use strum::IntoEnumIterator;
+6 | use strum::IntoEnumIterator;
   |     ^^^^^^^^^^^^^^^^^^^^^^^
 
-warning: `cache_diff_derive` (lib) generated 4 warnings (run `cargo fix --lib -p cache_diff_derive` to apply 3 suggestions)
-    Checking cache_diff-tests v0.0.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250318-25316-lx58br/cache_diff/target/tests/trybuild/cache_diff)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.03s
+warning: `cache_diff_derive` (lib) generated 3 warnings (run `cargo fix --lib -p cache_diff_derive` to apply 2 suggestions)
+    Checking cache_diff-tests v0.0.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-80916-58lr1e/cache_diff/target/tests/trybuild/cache_diff)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.04s
 
 
 test tests/fails/duplicate_attribute.rs ... ok
+test tests/fails/multiple_unknown.rs ... ok
 
 
 test should_not_compile ... ok
 
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.77s
 
-     Running unittests src/lib.rs (target/debug/deps/cache_diff_derive-b1392a164ca5ac04)
+     Running unittests src/lib.rs (target/debug/deps/cache_diff_derive-4930fc90e2c7614a)
 
 running 12 tests
-test parse_field::tests::test_parse_attributes ... ok
 test parse_container::tests::test_known_attributes ... ok
 test parse_field::tests::test_known_attributes ... ok
-test parse_container::tests::test_parse_attribute ... ok
+test parse_field::tests::test_parse_attributes ... ok
 test parse_field::tests::test_requires_named_struct ... ok
-test shared::tests::test_parse_attrs_with_span_vec_demo ... ok
-test shared::tests::test_parse_attrs_vec_demo ... ok
-test parse_field::tests::test_parse_field_plain ... ok
-test parse_container::tests::test_no_fields ... ok
+test parse_container::tests::test_parse_attribute ... ok
 test parse_container::tests::test_custom_parse_attribute ... ok
+test shared::tests::test_parse_attrs_vec_demo ... ok
 test parse_container::tests::test_all_ignored ... ok
+test parse_field::tests::test_parse_field_plain ... ok
+test shared::tests::test_parse_attrs_with_span_vec_demo ... ok
+test parse_container::tests::test_no_fields ... ok
 test parse_container::tests::test_parses ... ok
 
 test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
@@ -3987,12 +4356,12 @@ test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fin
 
 running 5 tests
 test cache_diff/src/lib.rs - (line 101) ... ok
-test cache_diff/src/lib.rs - (line 29) ... ok
 test cache_diff/src/lib.rs - (line 8) ... ok
+test cache_diff/src/lib.rs - (line 29) ... ok
 test cache_diff/src/lib.rs - (line 48) ... ok
 test cache_diff/src/lib.rs - (line 72) ... ok
 
-test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
 
    Doc-tests cache_diff_derive
 
@@ -4018,7 +4387,9 @@ $ exa --tree --git-ignore .
 │     ├── compilation_tests.rs
 │     └── fails
 │        ├── duplicate_attribute.rs
-│        └── duplicate_attribute.stderr
+│        ├── duplicate_attribute.stderr
+│        ├── multiple_unknown.rs
+│        └── multiple_unknown.stderr
 ├── cache_diff_derive
 │  ├── Cargo.toml
 │  └── src
@@ -4214,8 +4585,10 @@ $ cat cache_diff/src/lib.rs
 //! like "OS (ubuntu-22 to ubuntu-24)". Alternatively, you can use <https://github.com/schneems/magic_migrate> to
 //! re-arrange your struct to only have one field with a custom display.
 //!
+
 #[cfg(feature = "derive")]
 pub use cache_diff_derive::CacheDiff;
+
 // Code
 pub trait CacheDiff {
     fn diff(&self, old: &Self) -> Vec<String>;
@@ -4288,12 +4661,14 @@ mod tests {
 }
 $ cat cache_diff_derive/src/lib.rs
 // File: `cache_diff_derive/src/lib.rs`
+
 mod parse_field;
 mod parse_container;
 mod shared;
 use proc_macro::TokenStream;
 use parse_container::ParseContainer;
 use parse_field::ParseField;
+
 // Code
 pub(crate) const NAMESPACE: &str = "cache_diff";
 pub(crate) const MACRO_NAME: &str = "CacheDiff";
@@ -4360,13 +4735,193 @@ fn create_cache_diff(item: proc_macro2::TokenStream) -> syn::Result<proc_macro2:
         }
     })
 }
+$ cat cache_diff_derive/src/shared.rs
+// File: `cache_diff_derive/src/shared.rs`
+
+use crate::{MACRO_NAME, NAMESPACE};
+use std::{collections::HashMap, fmt::Display, str::FromStr};
+use std::collections::VecDeque;
+
+// Code
+/// Parses one bare word like "rename" for any iterable enum, and that's it
+///
+/// Won't parse an equal sign or anything else
+pub(crate) fn known_attribute<T>(identity: &syn::Ident) -> syn::Result<T>
+where
+    T: FromStr + strum::IntoEnumIterator + Display,
+{
+    let name_str = &identity.to_string();
+    T::from_str(name_str).map_err(|_| {
+        syn::Error::new(
+            identity.span(),
+            format!(
+                "Unknown {NAMESPACE} attribute: `{identity}`. Must be one of {valid_keys}",
+                valid_keys = T::iter()
+                    .map(|key| format!("`{key}`"))
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            ),
+        )
+    })
+}
+
+fn parse_attrs<T>(attrs: &[syn::Attribute]) -> Result<Vec<T>, syn::Error>
+where
+    T: syn::parse::Parse,
+{
+    let mut attributes = Vec::new();
+    let mut errors = VecDeque::new();
+    for attr in attrs.iter().filter(|attr| attr.path().is_ident(NAMESPACE)) {
+        match attr
+            .parse_args_with(syn::punctuated::Punctuated::<T, syn::Token![,]>::parse_terminated)
+        {
+            Ok(attrs) => {
+                for attribute in attrs {
+                    attributes.push(attribute);
+                }
+            }
+            Err(error) => errors.push_back(error),
+        }
+    }
+
+    if let Some(mut error) = errors.pop_front() {
+        for e in errors {
+            error.combine(e);
+        }
+        Err(error)
+    } else {
+        Ok(attributes)
+    }
+}
+
+/// Helper type for parsing a type and preserving the original span
+///
+/// Used with [syn::punctuated::Punctuated] to capture the inner span of an attribute.
+#[derive(Debug)]
+pub(crate) struct WithSpan<T>(pub(crate) T, pub(crate) proc_macro2::Span);
+
+impl<T> WithSpan<T> {
+    pub(crate) fn into_inner(self) -> T {
+        self.0
+    }
+}
+
+impl<T: syn::parse::Parse> syn::parse::Parse for WithSpan<T> {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let span = input.span();
+        Ok(WithSpan(input.parse()?, span))
+    }
+}
+
+/// Parses all attributes and returns a lookup with the parsed value and span information where it was found
+///
+/// - Guarantees attributes are not duplicated
+pub(crate) fn attribute_lookup<T>(
+    attrs: &[syn::Attribute],
+) -> Result<HashMap<T::Discriminant, WithSpan<T>>, syn::Error>
+where
+    T: strum::IntoDiscriminant + syn::parse::Parse,
+    T::Discriminant: Eq + Display + std::hash::Hash + Copy,
+{
+    let mut seen = HashMap::new();
+    let mut errors = VecDeque::new();
+    let parsed_attributes = parse_attrs::<WithSpan<T>>(attrs)?;
+    for attribute in parsed_attributes {
+        let WithSpan(ref parsed, span) = attribute;
+        let key = parsed.discriminant();
+        if let Some(WithSpan(_, prior)) = seen.insert(key, attribute) {
+            errors.push_back(
+                syn::Error::new(
+                    span,
+                    format!("{MACRO_NAME} duplicate attribute: `{key}`")
+                )
+            );
+            errors.push_back(
+                syn::Error::new(
+                    prior,
+                    format!("previously `{key}` defined here"),
+                )
+            );
+        }
+    }
+
+    if let Some(mut error) = errors.pop_front() {
+        for e in errors {
+            error.combine(e);
+        }
+        Err(error)
+    } else {
+        Ok(seen)
+    }
+}
+
+pub(crate) fn check_empty<T>(lookup: HashMap<T::Discriminant, WithSpan<T>>) -> syn::Result<()>
+where
+    T: strum::IntoDiscriminant,
+    T::Discriminant: Display + std::hash::Hash,
+{
+    if lookup.is_empty() {
+        Ok(())
+    } else {
+        let mut error = syn::Error::new(
+            proc_macro2::Span::call_site(),
+            "Internal error: The developer forgot to implement some logic",
+        );
+        for (key, WithSpan(_, span)) in lookup.into_iter() {
+            error.combine(syn::Error::new(
+                span,
+                format!("Attribute `{key}` parsed but not used"),
+            ));
+        }
+        Err(error)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // Test use
+    use super::*;
+    // Test code
+    #[test]
+    fn test_parse_attrs_vec_demo() {
+        let field: syn::Field = syn::parse_quote! {
+            #[cache_diff("Ruby version")]
+            name: String
+        };
+
+        assert_eq!(
+            vec![syn::parse_str::<syn::LitStr>(r#""Ruby version""#).unwrap()],
+            parse_attrs::<syn::LitStr>(&field.attrs).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_parse_attrs_with_span_vec_demo() {
+        let field: syn::Field = syn::parse_quote! {
+            #[cache_diff("Ruby version")]
+            name: String
+        };
+
+        assert_eq!(
+            &syn::parse_str::<syn::LitStr>(r#""Ruby version""#).unwrap(),
+            parse_attrs::<WithSpan<syn::LitStr>>(&field.attrs)
+                .unwrap()
+                .into_iter()
+                .map(WithSpan::into_inner)
+                .collect::<Vec<_>>()
+                .first()
+                .unwrap()
+        );
+    }
+}
 $ cat cache_diff_derive/src/parse_field.rs
 // File: `cache_diff_derive/src/parse_field.rs`
+
 use crate::MACRO_NAME;
 use syn::spanned::Spanned;
 use std::str::FromStr;
-use strum::IntoEnumIterator;
 use crate::shared::WithSpan;
+
 // Code
 /// Field (i.e. `name: String`) of a container (struct) and its parsed attributes
 /// i.e. `#[cache_diff(rename = "Ruby version")]`
@@ -4387,6 +4942,9 @@ pub(crate) struct ParseField {
 
 impl ParseField {
     pub(crate) fn from_field(field: &syn::Field) -> Result<Self, syn::Error> {
+        let mut rename = None;
+        let mut ignore = None;
+        let mut display = None;
         let ident = field.ident.clone().ok_or_else(|| {
             syn::Error::new(
                 field.span(),
@@ -4394,22 +4952,29 @@ impl ParseField {
             )
         })?;
 
-        let mut lookup = crate::shared::attribute_lookup::<ParseAttribute>(&field.attrs)?;
-        let name = lookup
-            .remove(&KnownAttribute::rename)
-            .map(WithSpan::into_inner)
-            .map(|parsed| match parsed {
-                ParseAttribute::rename(inner) => inner,
-                _ => unreachable!(),
-            })
+        for (_, WithSpan(attribute, span)) in
+            crate::shared::attribute_lookup::<ParseAttribute>(&field.attrs)?.drain()
+        {
+            match attribute {
+                ParseAttribute::rename(inner) => rename = Some(inner),
+                ParseAttribute::ignore(inner) => ignore = Some((inner, span)),
+                ParseAttribute::display(inner) => display = Some(inner),
+            }
+        }
+
+        if let Some((_, span)) = ignore {
+            if display.is_some() || rename.is_some() {
+                return Err(syn::Error::new(
+                        span,
+                        format!("The cache_diff attribute `{}` renders other attributes inactive, remove additional attributes", KnownAttribute::ignore)
+                    )
+                );
+            }
+        }
+
+        let name = rename
             .unwrap_or_else(|| ident.to_string().replace("_", " "));
-        let display = lookup
-            .remove(&KnownAttribute::display)
-            .map(WithSpan::into_inner)
-            .map(|parsed| match parsed {
-                ParseAttribute::display(inner) => inner,
-                _ => unreachable!(),
-            })
+        let display = display
             .unwrap_or_else(|| {
                 if is_pathbuf(&field.ty) {
                     syn::parse_str("std::path::Path::display")
@@ -4419,14 +4984,7 @@ impl ParseField {
                         .expect("std::convert::identity parses as a syn::Path")
                 }
             });
-        let ignore = lookup
-            .remove(&KnownAttribute::ignore)
-            .map(WithSpan::into_inner)
-            .map(|parsed| match parsed {
-                ParseAttribute::ignore(inner) => inner,
-                _ => unreachable!(),
-            });
-        crate::shared::check_empty(lookup)?;
+        let ignore = ignore.map(|(ignore, _)| ignore);
 
         Ok(ParseField {
             ident,
@@ -4436,7 +4994,6 @@ impl ParseField {
         })
     }
 }
-
 
 /// A single attribute
 #[derive(strum::EnumDiscriminants, Debug, PartialEq)]
@@ -4559,12 +5116,14 @@ mod tests {
 }
 $ cat cache_diff_derive/src/parse_container.rs
 // File: `cache_diff_derive/src/parse_container.rs`
+
 use crate::parse_field::ParseField;
 use crate::MACRO_NAME;
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 use crate::NAMESPACE;
 use crate::shared::WithSpan;
+
 // Code
 /// Container (i.e. struct Metadata { ... }) and its parsed attributes
 /// i.e. `#[cache_diff( ... )]`

@@ -32,11 +32,8 @@ Now, define an enum that will hold each of our attribute variants. Add this code
 
 ```rust
 :::>> print.erb
-<%
-import = ["use std::str::FromStr;"];
-import << "use strum::IntoEnumIterator;"
-
-code = <<-EOF
+<%=
+append(filename: "cache_diff_derive/src/parse_field.rs", use: "use std::str::FromStr;", code: <<~CODE)
 /// A single attribute
 #[derive(strum::EnumDiscriminants, Debug, PartialEq)]
 #[strum_discriminants(
@@ -51,10 +48,7 @@ enum ParseAttribute {
     #[allow(non_camel_case_types)]
     ignore(String), // #[cache_diff(ignore)]
 }
-EOF
-%>
-<%=
-append(filename: "cache_diff_derive/src/parse_field.rs", use: import, code: code)
+CODE
 %>
 ```
 
@@ -290,21 +284,34 @@ To parse a comma-separated set of attributes, add this code:
 ```rust
 :::>> print.erb
 <%=
-append(filename: "cache_diff_derive/src/shared.rs", code: <<-CODE)
+append(filename: "cache_diff_derive/src/shared.rs", use: "use std::collections::VecDeque;", code: <<-CODE)
 fn parse_attrs<T>(attrs: &[syn::Attribute]) -> Result<Vec<T>, syn::Error>
 where
     T: syn::parse::Parse,
 {
     let mut attributes = Vec::new();
+    let mut errors = VecDeque::new();
     for attr in attrs.iter().filter(|attr| attr.path().is_ident(NAMESPACE)) {
-        for attribute in attr.parse_args_with(
-            syn::punctuated::Punctuated::<T, syn::Token![,]>::parse_terminated,
-        )? {
-            attributes.push(attribute)
+        match attr
+            .parse_args_with(syn::punctuated::Punctuated::<T, syn::Token![,]>::parse_terminated)
+        {
+            Ok(attrs) => {
+                for attribute in attrs {
+                    attributes.push(attribute);
+                }
+            }
+            Err(error) => errors.push_back(error),
         }
     }
 
-    Ok(attributes)
+    if let Some(mut error) = errors.pop_front() {
+        for e in errors {
+            error.combine(e);
+        }
+        Err(error)
+    } else {
+        Ok(attributes)
+    }
 }
 CODE
 %>
@@ -382,7 +389,7 @@ This new `WithSpan` struct can hold any `impl syn::parse::Parse` value, such as 
 ```rust
 :::>> print.erb
 <%=
-append(filename: "cache_diff_derive/src/shared.rs", test_use: "use super::*;", test_code: <<-CODE)
+append(filename: "cache_diff_derive/src/shared.rs", test_code: <<-CODE)
     #[test]
     fn test_parse_attrs_with_span_vec_demo() {
         let field: syn::Field = syn::parse_quote! {
@@ -405,6 +412,29 @@ CODE
 %>
 ```
 
+You might notice that we're not returning from a failure early in our code, instead we're building up a `VecDeque<syn::Error>` and using that to combine multiple errors into one before returning. While programmers of dynamic languages like Python and Ruby are used to fixing an error only to see a brand new error, Rust developers expect the compiler to show them as many problems as possible at once. This error accumulation approach allows us to emit multiple errors from multiple attribute lines. For example:
+
+```
+:::-> file.write cache_diff/tests/fails/multiple_unknown.stderr
+error: Unknown cache_diff attribute: `unknown`. Must be one of `rename`, `display`, `ignore`
+ --> tests/fails/multiple_unknown.rs:5:18
+  |
+5 |     #[cache_diff(unknown)]
+  |                  ^^^^^^^
+
+error: Unknown cache_diff attribute: `unknown`. Must be one of `rename`, `display`, `ignore`
+ --> tests/fails/multiple_unknown.rs:6:18
+  |
+6 |     #[cache_diff(unknown = "value")]
+  |                  ^^^^^^^
+
+error: Unknown cache_diff attribute: `unknown`. Must be one of `rename`, `display`, `ignore`
+ --> tests/fails/multiple_unknown.rs:7:18
+  |
+7 |     #[cache_diff(unknown = function)]
+  |                  ^^^^^^^
+```
+
 Now, we have the building blocks for a generic function with the properties we want. Add this code now:
 
 ```rust
@@ -422,22 +452,35 @@ where
     T::Discriminant: Eq + Display + std::hash::Hash + Copy,
 {
     let mut seen = HashMap::new();
+    let mut errors = VecDeque::new();
     let parsed_attributes = parse_attrs::<WithSpan<T>>(attrs)?;
     for attribute in parsed_attributes {
         let WithSpan(ref parsed, span) = attribute;
         let key = parsed.discriminant();
         if let Some(WithSpan(_, prior)) = seen.insert(key, attribute) {
-            let mut error =
-                syn::Error::new(span, format!("{MACRO_NAME} duplicate attribute: `{key}`"));
-            error.combine(syn::Error::new(
-                prior,
-                format!("previously `{key}` defined here"),
-            ));
-            return Err(error);
+            errors.push_back(
+                syn::Error::new(
+                    span,
+                    format!("{MACRO_NAME} duplicate attribute: `{key}`")
+                )
+            );
+            errors.push_back(
+                syn::Error::new(
+                    prior,
+                    format!("previously `{key}` defined here"),
+                )
+            );
         }
     }
 
-    Ok(seen)
+    if let Some(mut error) = errors.pop_front() {
+        for e in errors {
+            error.combine(e);
+        }
+        Err(error)
+    } else {
+        Ok(seen)
+    }
 }
 CODE
 %>
@@ -463,7 +506,7 @@ We try inserting the attribute into the HashMap based on the discriminant key:
 :::-> $ grep -A1000 '        if let Some(WithSpan' cache_diff_derive/src/shared.rs | awk '/        }/ {print; exit} {print}'
 ```
 
-If a prior entry exists, it represents an error, as each attribute should only have one representation. Here, we are using [syn::Error::combine](https://docs.rs/syn/latest/syn/struct.Error.html#method.combine) to create two errors effectively, the first points at the most recent attribute we tried to add, while the last points at the attribute that was already in the HashMap. The result will look something like:
+If a prior entry exists, it represents an error, as each attribute should only have one representation. The first `syn::Error` added points at the most recent attribute we tried to add, while the second error added points at the attribute that was already in the HashMap. The result will look something like:
 
 ```
 :::-> file.write cache_diff/tests/fails/duplicate_attribute.stderr
@@ -577,6 +620,9 @@ Replace this code:
 replace(filename: "cache_diff_derive/src/parse_field.rs", match: /impl ParseField {/, code: <<-CODE )
 impl ParseField {
     pub(crate) fn from_field(field: &syn::Field) -> Result<Self, syn::Error> {
+        let mut rename = None;
+        let mut ignore = None;
+        let mut display = None;
         let ident = field.ident.clone().ok_or_else(|| {
             syn::Error::new(
                 field.span(),
@@ -584,22 +630,29 @@ impl ParseField {
             )
         })?;
 
-        let mut lookup = crate::shared::attribute_lookup::<ParseAttribute>(&field.attrs)?;
-        let name = lookup
-            .remove(&KnownAttribute::rename)
-            .map(WithSpan::into_inner)
-            .map(|parsed| match parsed {
-                ParseAttribute::rename(inner) => inner,
-                _ => unreachable!(),
-            })
+        for (_, WithSpan(attribute, span)) in
+            crate::shared::attribute_lookup::<ParseAttribute>(&field.attrs)?.drain()
+        {
+            match attribute {
+                ParseAttribute::rename(inner) => rename = Some(inner),
+                ParseAttribute::ignore(inner) => ignore = Some((inner, span)),
+                ParseAttribute::display(inner) => display = Some(inner),
+            }
+        }
+
+        if let Some((_, span)) = ignore {
+            if display.is_some() || rename.is_some() {
+                return Err(syn::Error::new(
+                        span,
+                        format!("The cache_diff attribute `{}` renders other attributes inactive, remove additional attributes", KnownAttribute::ignore)
+                    )
+                );
+            }
+        }
+
+        let name = rename
             .unwrap_or_else(|| ident.to_string().replace("_", " "));
-        let display = lookup
-            .remove(&KnownAttribute::display)
-            .map(WithSpan::into_inner)
-            .map(|parsed| match parsed {
-                ParseAttribute::display(inner) => inner,
-                _ => unreachable!(),
-            })
+        let display = display
             .unwrap_or_else(|| {
                 if is_pathbuf(&field.ty) {
                     syn::parse_str("std::path::Path::display")
@@ -609,14 +662,7 @@ impl ParseField {
                         .expect("std::convert::identity parses as a syn::Path")
                 }
             });
-        let ignore = lookup
-            .remove(&KnownAttribute::ignore)
-            .map(WithSpan::into_inner)
-            .map(|parsed| match parsed {
-                ParseAttribute::ignore(inner) => inner,
-                _ => unreachable!(),
-            });
-        crate::shared::check_empty(lookup)?;
+        let ignore = ignore.map(|(ignore, _)| ignore);
 
         Ok(ParseField {
             ident,
@@ -626,14 +672,23 @@ impl ParseField {
         })
     }
 }
-
 CODE
 %>
 ```
 
-Each attribute we support is queried. If it doesn't exist, we set a default and keep going until all information needed to build the struct is present. If we parse an attribute into the lookup but forget to remove it, an exception is raised that points to the attribute that we forgot to wire up.
+This code iterates over all parsed attributes to pull out values we care about from the `HashMap` via `drain()`:
 
-It might seem like we added a lot of code, but most of this boils down to:
+```rust
+:::-> $ grep -A1000 'for \(_, WithSpan\(attribute, span\)\) in' cache_diff_derive/src/shared.rs | awk '/^        }/ {print; exit} {print}'
+```
+
+From there we check for possible developer mistakes by raising an error if `ignore` is detected with either `display` or `rename`:
+
+```rust
+:::-> $ grep -A1000 'if let Some\(\(_, span\)\) = ignore' cache_diff_derive/src/shared.rs | awk '/^        }/ {print; exit} {print}'
+```
+
+Then default values are defined and a `ParseField` is returned. It might seem like we added a lot of code, but most of this boils down to:
 
 - Define all valid attributes in a `ParseAttribute` enum with a `KnownAttribute` discriminant
 - Implement `syn::parse::Parse` for these enums
@@ -643,7 +698,9 @@ It might seem like we added a lot of code, but most of this boils down to:
 
 Sometimes, it's easier to go the other direction. You can define the fields you need for `ParseField` and then figure out the API you want to make to support it, but from a testing perspective, it's easier to start with smaller parsers and gradually combine them to build bigger ones.
 
-We're done with the field modifications but haven't implemented the logic in our primary derive function yet. We will do that shortly. We also haven't added a test for this new syntax. Previously we used integration tests in the form of doctests, however I want the ability to assert failing behavior, such as an attribute that's defined twice, and I want to assert that we're pointing at the spans we expect. To do that, we will add the [`try_build`](https://crates.io/crates/trybuild) crate, which can help us visualize compiler errors that our users will see.
+We're done with the field modifications but haven't implemented the logic in our primary derive function yet. We will do that shortly. We also haven't added a test for this new syntax.
+
+Previously we used integration tests in the form of doctests, however I want the ability to assert failing behavior, such as an attribute that's defined twice, and I want to assert that we're pointing at the spans we expect. To do that, we will add the [`try_build`](https://crates.io/crates/trybuild) crate, which can help us visualize compiler errors that our users will see.
 
 ```
 :::>> $ cargo add --dev trybuild@1.0.104 --package cache_diff
@@ -668,7 +725,7 @@ fn should_compile() {
 
 Now add a compilation failure case.
 
-```
+```rust
 :::>> file.write cache_diff/tests/fails/duplicate_attribute.rs
 use cache_diff::CacheDiff;
 
@@ -685,6 +742,29 @@ And assert the output of that failure case:
 
 ```
 :::>> $ cat cache_diff/tests/fails/duplicate_attribute.stderr
+```
+
+We also want to ensure that our error logic won't stop on the first attribute but will instead store errors after attempting to parse all attributes:
+
+```rust
+:::-> file.write cache_diff/tests/fails/multiple_unknown.rs
+use cache_diff::CacheDiff;
+
+#[derive(CacheDiff)]
+struct CustomDiffFn {
+    #[cache_diff(unknown)]
+    #[cache_diff(unknown = "value")]
+    #[cache_diff(unknown = function)]
+    name: String,
+}
+
+fn main() {}
+```
+
+And assert the output of that failure case:
+
+```
+:::>> $ cat cache_diff/tests/fails/multiple_unknown.stderr
 ```
 
 Verify tests are all passing:
@@ -705,6 +785,7 @@ If your project is failing or if the tests you added didn't run, here's the full
 :::>> $ cat cache_diff_derive/Cargo.toml
 :::>> $ cat cache_diff/src/lib.rs
 :::>> $ cat cache_diff_derive/src/lib.rs
+:::>> $ cat cache_diff_derive/src/shared.rs
 :::>> $ cat cache_diff_derive/src/parse_field.rs
 :::>> $ cat cache_diff_derive/src/parse_container.rs
 ```

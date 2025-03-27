@@ -151,6 +151,8 @@ Great! If your project is failing or if the tests you added didn't run, here's t
 :::>> $ cat cache_diff_derive/Cargo.toml
 :::>> $ cat cache_diff/src/lib.rs
 :::>> $ cat cache_diff_derive/src/lib.rs
+:::-- $ touch cache_diff_derive/src/shared.rs
+:::>> $ cat cache_diff_derive/src/shared.rs
 :::>> $ cat cache_diff_derive/src/parse_field.rs
 :::>> $ cat cache_diff_derive/src/parse_container.rs
 ```

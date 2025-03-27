@@ -9,18 +9,17 @@ RUST_FILE = ERB.new(<<-'FILE', nil, "<>")
 // File: `<%= filename %>`
 <% if !TEMPLATES[filename][:module_docs].empty? %>
 <%= "// Module docs ...\n" if TEMPLATES[filename][:module_docs] != module_docs %>
-<%= module_docs.join("\n") %>
-<% end %>
+<%= module_docs.join("\n") %><% end %>
 <% if !TEMPLATES[filename][:mod].empty? %>
-<%= "// Mod ...\n" if TEMPLATES[filename][:mod] != mod %>
-<%= mod.join("\n") %>
 
-<% end %>
+<%= "// Mod ...\n" if TEMPLATES[filename][:mod] != mod %>
+<%= mod.join("\n") %><% end %>
 <% if !TEMPLATES[filename][:use].empty? %>
+
 <%= "// Use ...\n" if TEMPLATES[filename][:use] != use %>
-<%= use.join("\n") %>
-<% end %>
+<%= use.join("\n") %><% end %>
 <% if !TEMPLATES[filename][:code].empty? %>
+
 
 // Code
 <%= "// ...\n" if TEMPLATES[filename][:code] != code %>
