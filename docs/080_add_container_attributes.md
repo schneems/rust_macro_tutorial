@@ -7,11 +7,8 @@ We'll define an enum to hold each container attribute variant as we did with fie
 
 ```rust
 :::>> print.erb
-<%
-import = ["use std::str::FromStr;"];
-import << "use strum::IntoEnumIterator;"
-
-code = <<-EOF
+<%=
+append(filename: "cache_diff_derive/src/parse_container.rs", code: <<~CODE)
 /// A single attribute
 #[derive(strum::EnumDiscriminants, Debug, PartialEq)]
 #[strum_discriminants(
@@ -22,10 +19,7 @@ enum ParseAttribute {
     #[allow(non_camel_case_types)]
     custom(syn::Path), // #[cache_diff(custom=<function>)]
 }
-EOF
-%>
-<%=
-append(filename: "cache_diff_derive/src/parse_container.rs", use: import, code: code)
+CODE
 %>
 ```
 
@@ -33,7 +27,7 @@ We will go ahead and add an implementation of `syn::parse::Parse` for `KnownAttr
 
 ```rust
 :::>> print.erb
-<%= append(filename: "cache_diff_derive/src/parse_container.rs", use: "use crate::NAMESPACE;", code: <<-CODE)
+<%= append(filename: "cache_diff_derive/src/parse_container.rs", code: <<-CODE)
 impl syn::parse::Parse for KnownAttribute {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let identity: syn::Ident = input.parse()?;
@@ -139,16 +133,16 @@ CODE
 %>
 ```
 
-Import the helper struct:
+Add import code:
 
 ```rust
 :::>> print.erb
 <%=
-append(filename: "cache_diff_derive/src/parse_container.rs", use: "use crate::shared::WithSpan;")
+append(filename: "cache_diff_derive/src/parse_container.rs", use: ["use crate::NAMESPACE;", "use crate::shared::WithSpan;", "use std::collections::VecDeque;"])
 %>
 ```
 
-Now, update the logic for building the container. Replace this code:
+Now, replace this code:
 
 ```rust
 :::-> print.erb
@@ -158,15 +152,22 @@ impl ParseContainer {
     pub(crate) fn from_derive_input(input: &syn::DeriveInput) -> Result<Self, syn::Error> {
         let ident = input.ident.clone();
         let generics = input.generics.clone();
-        let mut lookup = crate::shared::attribute_lookup::<ParseAttribute>(&input.attrs)?;
-        let custom = lookup
-            .remove(&KnownAttribute::custom)
-            .map(WithSpan::into_inner)
-            .map(|parsed| match parsed {
-                ParseAttribute::custom(path) => path,
-            });
+        let mut fields = Vec::new();
+        let mut errors = VecDeque::new();
+        let mut custom = None;
 
-        let fields = match input.data {
+        match crate::shared::attribute_lookup::<ParseAttribute>(&input.attrs) {
+            Ok(mut lookup) => {
+                for (_, WithSpan(value, _)) in lookup.drain() {
+                    match value {
+                        ParseAttribute::custom(path) => custom = Some(path),
+                    }
+                }
+            }
+            Err(error) => errors.push_back(error),
+        }
+
+        let syn_fields = match input.data {
             syn::Data::Struct(syn::DataStruct {
                 fields: syn::Fields::Named(syn::FieldsNamed { ref named, .. }),
                 ..
@@ -175,44 +176,55 @@ impl ParseContainer {
                 return Err(syn::Error::new(
                     ident.span(),
                     format!("{MACRO_NAME} can only be used on named structs"),
-                ))
-            }
-        }
-        .into_iter()
-        .map(ParseField::from_field)
-        .collect::<Result<Vec<ParseField>, syn::Error>>()?;
-
-        crate::shared::check_empty(lookup)?;
-
-        if let Some(field) = fields
-            .iter()
-            .find(|field| matches!(field.ignore.as_deref(), Some("custom")))
-        {
-            if custom.is_none() {
-                let mut error = syn::Error::new(
-                    proc_macro2::Span::call_site(),
-                    format!("`Expected `{ident}` to implement the `custom` attribute `#[{NAMESPACE}(custom = <function>)]`, but it does not"),
-                );
-                error.combine(syn::Error::new(
-                    field.ident.span(),
-                    format!(
-                        "Field `{}` is ignored and requires `{ident}` to implement `custom`",
-                        field.ident
-                    ),
                 ));
-                return Err(error);
+            }
+        };
+
+        for syn_field in syn_fields.iter() {
+            match ParseField::from_field(syn_field) {
+                Ok(ParseField {
+                    ignore: Some(value),
+                    ..
+                }) => {
+                    if value == "custom" && custom.is_none() {
+                        errors.push_back(syn::Error::new(
+                            ident.span(),
+                            format!(
+                                "field `{field}` on {container} marked ignored as custom, but missing `#[{NAMESPACE}({custom_attr})]` found on `{container}`",
+                                field = syn_field.clone().ident.expect("named structs only"),
+                                container = &ident,
+                                custom_attr = KnownAttribute::custom,
+                            )
+                        ))
+                    }
+                }
+                Ok(active_field) => fields.push(active_field),
+                Err(error) => {
+                    errors.push_back(error);
+                }
             }
         }
 
-        if fields.iter().any(|f| f.ignore.is_none()) {
+        if let Some(mut error) = errors.pop_front() {
+            for e in errors {
+                error.combine(e);
+            }
+            Err(error)
+        } else if fields.is_empty() {
+            Err(syn::Error::new(
+                ident.span(),
+                format!(
+                    "No fields to compare for {MACRO_NAME}, ensure struct has at least one named field that isn't `{NAMESPACE}({})`",
+                    crate::parse_field::KnownAttribute::ignore
+                ),
+            ))
+        } else {
             Ok(ParseContainer {
                 ident,
                 generics,
-                fields,
                 custom,
+                fields,
             })
-        } else {
-            Err(syn::Error::new(ident.span(), format!("No fields to compare for {MACRO_NAME}, ensure struct has at least one named field that isn't `{NAMESPACE}(ignore)`")))
         }
     }
 }
@@ -220,16 +232,17 @@ CODE
 %>
 ```
 
-There are two new things here; one of them is small and expected. We lookup the custom attribute from our `HashMap` similar to what we did with `ParseField`:
+We use the same techniques that we saw in `ParseField` to accumulate as many errors as possible. We lookup the custom attribute from our `HashMap` similar to what we did with `ParseField`:
 
 ```rust
-:::-> $ grep -A1000 'let custom = lookup' cache_diff_derive/src/shared.rs | awk '/\;/ {print; exit} {print}'
+:::-> $ grep -A1000 'match attribute_lookup' cache_diff_derive/src/parse_container.rs | awk '/^        }/ {print; exit} {print}'
 ```
 
-, I hope you were expecting that addition. The other is A bunch of error handling. For example:
+
+
 
 ```rust
-:::-> $ grep -A1000 'if let Some(field) = fields' cache_diff_derive/src/shared.rs | awk '/\;/ {print; exit} {print}'
+:::-> $ grep -A1000 'if let Some(field) = fields' cache_diff_derive/src/parse_container.rs | awk '/\;/ {print; exit} {print}'
 ```
 
 Previously, when I added the ability to set a field as ignored with a reason, it allowed us to add a preference signal that did something meaningful. In this case, we are saying that if the user adds a `#[cache_diff(ignore = "custom")]` to one of their fields, they MUST also add a `#[cache_diff(custom = <function>)]` to the container. Because proc macros make it faster for the end user to generate and manipulate code, it makes it faster for them to make mistakes, too. You could imagine a scenario where they're playing around with configuration options, and they accidentally delete the container attribute line, and it's not caught in code review, and the linter isn't loud enough, so they deploy with code that looks correct but isn't.

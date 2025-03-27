@@ -232,7 +232,7 @@ CODE
 And make sure it works as expected:
 
 ```
-:::>> $ cargo clippy
+:::>> $ cargo clippy -- --deny warnings
 :::>> $ cargo test
 ```
 

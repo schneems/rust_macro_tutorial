@@ -33,14 +33,14 @@ Now, define an enum that will hold each of our attribute variants. Add this code
 ```rust
 :::>> print.erb
 <%=
-append(filename: "cache_diff_derive/src/parse_field.rs", use: "use std::str::FromStr;", code: <<~CODE)
+append(filename: "cache_diff_derive/src/parse_field.rs", code: <<~CODE)
 /// A single attribute
 #[derive(strum::EnumDiscriminants, Debug, PartialEq)]
 #[strum_discriminants(
     name(KnownAttribute),
     derive(strum::EnumIter, strum::Display, strum::EnumString, Hash)
 )]
-enum ParseAttribute {
+pub(crate) enum ParseAttribute {
     #[allow(non_camel_case_types)]
     rename(String), // #[cache_diff(rename="...")]
     #[allow(non_camel_case_types)]
@@ -369,6 +369,7 @@ append(filename: "cache_diff_derive/src/shared.rs", code: <<-CODE)
 pub(crate) struct WithSpan<T>(pub(crate) T, pub(crate) proc_macro2::Span);
 
 impl<T> WithSpan<T> {
+    #[cfg(test)]
     pub(crate) fn into_inner(self) -> T {
         self.0
     }
@@ -523,37 +524,6 @@ error: previously `rename` defined here
   |                  ^^^^^^
 ```
 
-Now, I want to ensure that all of these attributes in our `HashMap` go somewhere. I don't want the programmer to add an attribute that successfully parses but has no effect because they forgot to look it up. To raise a nice error in that situation, I'll assume that when a key is looked up, it will be removed from the HashMap. That means when we're done consuming all attributes, the HashMap should be empty. Add code to raise an error if it's not:
-
-```rust
-:::>> print.erb
-<%=
-append(filename: "cache_diff_derive/src/shared.rs", code: <<-CODE)
-pub(crate) fn check_empty<T>(lookup: HashMap<T::Discriminant, WithSpan<T>>) -> syn::Result<()>
-where
-    T: strum::IntoDiscriminant,
-    T::Discriminant: Display + std::hash::Hash,
-{
-    if lookup.is_empty() {
-        Ok(())
-    } else {
-        let mut error = syn::Error::new(
-            proc_macro2::Span::call_site(),
-            "Internal error: The developer forgot to implement some logic",
-        );
-        for (key, WithSpan(_, span)) in lookup.into_iter() {
-            error.combine(syn::Error::new(
-                span,
-                format!("Attribute `{key}` parsed but not used"),
-            ));
-        }
-        Err(error)
-    }
-}
-CODE
-%>
-```
-
 At this point, we've added the ability to extract any cache_diff attributes from a `syn::Field` as a `HashMap<KnownAttribute, WithSpan<ParseAttribute>>`, but so far, nothing uses `ParseAttribute`. We need to put this information into a `ParseField` to make it useful. Replace this code:
 
 ```rust
@@ -688,15 +658,15 @@ From there we check for possible developer mistakes by raising an error if `igno
 :::-> $ grep -A1000 'if let Some\(\(_, span\)\) = ignore' cache_diff_derive/src/shared.rs | awk '/^        }/ {print; exit} {print}'
 ```
 
-Then default values are defined and a `ParseField` is returned. It might seem like we added a lot of code, but most of this boils down to:
+Then default values are defined and a `ParseField` is returned.
+
+We added a lot of code making many small steps. This process  boils down to:
 
 - Define all valid attributes in a `ParseAttribute` enum with a `KnownAttribute` discriminant
 - Implement `syn::parse::Parse` for these enums
 - Implement a function that takes in a `&[syn::Attribute]` and returns `HashMap` that allows us to pull out the `ParseAttribute`
 - Add any new fields needed to your `ParseField` struct
 - Adjust your building functions to use the new attribute information collected.
-
-Sometimes, it's easier to go the other direction. You can define the fields you need for `ParseField` and then figure out the API you want to make to support it, but from a testing perspective, it's easier to start with smaller parsers and gradually combine them to build bigger ones.
 
 We're done with the field modifications but haven't implemented the logic in our primary derive function yet. We will do that shortly. We also haven't added a test for this new syntax.
 
