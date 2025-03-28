@@ -1,0 +1,14 @@
+[package]
+name = "cache_diff"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cache_diff_derive = { version = "0.1.0" , optional = true, path = "../cache_diff_derive" }
+
+[features]
+derive = ["dep:cache_diff_derive"]
+default = ["derive"]
+
+[dev-dependencies]
+trybuild = "1.0.104"

@@ -1,0 +1,14 @@
+[package]
+name = "cache_diff_derive"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# Turn Rust code into Tokens
+quote = "1.0.37"
+# Parse tokens into Rust code
+syn = { version = "2.0.83", features = ["extra-traits"] }
+proc-macro2 = "1.0.89"
+strum = { version = "0.27.1", features = ["derive"] }
+[lib]
+proc-macro = true

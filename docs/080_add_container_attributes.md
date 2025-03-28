@@ -214,8 +214,8 @@ impl ParseContainer {
             Err(syn::Error::new(
                 ident.span(),
                 format!(
-                    "No fields to compare for {MACRO_NAME}, ensure struct has at least one named field that isn't `{NAMESPACE}({})`",
-                    crate::parse_field::KnownAttribute::ignore
+                    "No fields to compare for {MACRO_NAME}, ensure struct has at least one named field that isn't `{NAMESPACE}({ignore_attr})`",
+                    ignore_attr = crate::parse_field::KnownAttribute::ignore
                 ),
             ))
         } else {

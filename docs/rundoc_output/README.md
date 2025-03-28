@@ -334,9 +334,9 @@ And when you run tests, it should look a little like this:
 
 ```
 $ cargo test
-   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-64518-i1211k/cache_diff/cache_diff)
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-64518-i1211k/cache_diff/cache_diff_derive)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.19s
+   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-83455-sp97v4/cache_diff/cache_diff)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-83455-sp97v4/cache_diff/cache_diff_derive)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.27s
      Running unittests src/lib.rs (target/debug/deps/cache_diff-2716017b25caff21)
 
 running 2 tests
@@ -1708,7 +1708,7 @@ fn main() {
 Then it will produce this error:
 
 ```
-   Compiling lol v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-64518-i1211k/lol)
+   Compiling lol v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-83455-sp97v4/lol)
 error[E0277]: `PathBuf` doesn't implement `std::fmt::Display`
  --> src/main.rs:4:5
   |
@@ -3765,8 +3765,8 @@ impl ParseContainer {
             Err(syn::Error::new(
                 ident.span(),
                 format!(
-                    "No fields to compare for {MACRO_NAME}, ensure struct has at least one named field that isn't `{NAMESPACE}({})`",
-                    crate::parse_field::KnownAttribute::ignore
+                    "No fields to compare for {MACRO_NAME}, ensure struct has at least one named field that isn't `{NAMESPACE}({ignore_attr})`",
+                    ignore_attr = crate::parse_field::KnownAttribute::ignore
                 ),
             ))
         } else {
@@ -4169,16 +4169,16 @@ And make sure it works as expected:
 $ cargo clippy -- --deny warnings
     Checking unicode-ident v1.0.18
     Checking strum v0.27.1
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-64518-i1211k/cache_diff/cache_diff_derive)
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-83455-sp97v4/cache_diff/cache_diff_derive)
     Checking proc-macro2 v1.0.94
     Checking quote v1.0.40
     Checking syn v2.0.100
-    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-64518-i1211k/cache_diff/cache_diff)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.13s
+    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-83455-sp97v4/cache_diff/cache_diff)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.04s
 $ cargo test
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-64518-i1211k/cache_diff/cache_diff_derive)
-   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-64518-i1211k/cache_diff/cache_diff)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.80s
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-83455-sp97v4/cache_diff/cache_diff_derive)
+   Compiling cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-83455-sp97v4/cache_diff/cache_diff)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.78s
      Running unittests src/lib.rs (target/debug/deps/cache_diff-04be03b39cdb07e6)
 
 running 2 tests
@@ -4190,17 +4190,17 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
      Running tests/compilation_tests.rs (target/debug/deps/compilation_tests-b686eddd51c40766)
 
 running 2 tests
-   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-64518-i1211k/cache_diff/cache_diff_derive)
-    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-64518-i1211k/cache_diff/cache_diff)
-    Checking cache_diff-tests v0.0.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-64518-i1211k/cache_diff/target/tests/trybuild/cache_diff)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.48s
+   Compiling cache_diff_derive v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-83455-sp97v4/cache_diff/cache_diff_derive)
+    Checking cache_diff v0.1.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-83455-sp97v4/cache_diff/cache_diff)
+    Checking cache_diff-tests v0.0.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-83455-sp97v4/cache_diff/target/tests/trybuild/cache_diff)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.50s
 
 
 There are no trybuild tests enabled yet.
 
 
 test should_compile ... ok
-    Checking cache_diff-tests v0.0.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-64518-i1211k/cache_diff/target/tests/trybuild/cache_diff)
+    Checking cache_diff-tests v0.0.0 (/private/var/folders/yr/yytf3z3n3q336f1tj2b2j0gw0000gn/T/d20250327-83455-sp97v4/cache_diff/target/tests/trybuild/cache_diff)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.03s
 
 
@@ -4210,23 +4210,23 @@ test tests/fails/multiple_unknown.rs ... ok
 
 test should_not_compile ... ok
 
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s
 
      Running unittests src/lib.rs (target/debug/deps/cache_diff_derive-4930fc90e2c7614a)
 
 running 12 tests
 test parse_container::tests::test_known_attributes ... ok
-test parse_field::tests::test_parse_field_plain ... ok
-test shared::tests::test_parse_attrs_vec_demo ... ok
-test parse_container::tests::test_all_ignored ... ok
 test parse_field::tests::test_requires_named_struct ... ok
-test parse_container::tests::test_no_fields ... ok
-test parse_field::tests::test_known_attributes ... ok
-test parse_field::tests::test_parse_attributes ... ok
-test parse_container::tests::test_parses ... ok
 test parse_container::tests::test_parse_attribute ... ok
+test shared::tests::test_parse_attrs_vec_demo ... ok
+test parse_field::tests::test_parse_attributes ... ok
+test parse_field::tests::test_known_attributes ... ok
+test parse_container::tests::test_no_fields ... ok
+test parse_field::tests::test_parse_field_plain ... ok
 test shared::tests::test_parse_attrs_with_span_vec_demo ... ok
 test parse_container::tests::test_custom_parse_attribute ... ok
+test parse_container::tests::test_all_ignored ... ok
+test parse_container::tests::test_parses ... ok
 
 test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
@@ -4236,10 +4236,10 @@ running 5 tests
 test cache_diff/src/lib.rs - (line 101) ... ok
 test cache_diff/src/lib.rs - (line 29) ... ok
 test cache_diff/src/lib.rs - (line 8) ... ok
-test cache_diff/src/lib.rs - (line 72) ... ok
 test cache_diff/src/lib.rs - (line 48) ... ok
+test cache_diff/src/lib.rs - (line 72) ... ok
 
-test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.91s
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
 
    Doc-tests cache_diff_derive
 
@@ -5062,8 +5062,8 @@ impl ParseContainer {
             Err(syn::Error::new(
                 ident.span(),
                 format!(
-                    "No fields to compare for {MACRO_NAME}, ensure struct has at least one named field that isn't `{NAMESPACE}({})`",
-                    crate::parse_field::KnownAttribute::ignore
+                    "No fields to compare for {MACRO_NAME}, ensure struct has at least one named field that isn't `{NAMESPACE}({ignore_attr})`",
+                    ignore_attr = crate::parse_field::KnownAttribute::ignore
                 ),
             ))
         } else {

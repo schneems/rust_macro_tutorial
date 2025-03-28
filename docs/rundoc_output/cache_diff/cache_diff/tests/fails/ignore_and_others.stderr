@@ -1,0 +1,23 @@
+error: cannot be used with other attributes. Remove ether `ignore` or `rename`
+ --> tests/fails/ignore_and_others.rs:5:18
+  |
+5 |     #[cache_diff(ignore)]
+  |                  ^^^^^^
+
+error: cannot be used with #[cache_diff(ignore)]
+ --> tests/fails/ignore_and_others.rs:6:18
+  |
+6 |     #[cache_diff(rename = "value")]
+  |                  ^^^^^^
+
+error: cannot be used with other attributes. Remove ether `ignore` or `rename`
+ --> tests/fails/ignore_and_others.rs:9:36
+  |
+9 |     #[cache_diff(rename = "value", ignore)]
+  |                                    ^^^^^^
+
+error: cannot be used with #[cache_diff(ignore)]
+ --> tests/fails/ignore_and_others.rs:9:18
+  |
+9 |     #[cache_diff(rename = "value", ignore)]
+  |                  ^^^^^^

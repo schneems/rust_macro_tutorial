@@ -1,0 +1,17 @@
+error: Unknown cache_diff attribute: `unknown`. Must be one of `rename`, `display`, `ignore`
+ --> tests/fails/multiple_unknown.rs:5:18
+  |
+5 |     #[cache_diff(unknown)]
+  |                  ^^^^^^^
+
+error: Unknown cache_diff attribute: `unknown`. Must be one of `rename`, `display`, `ignore`
+ --> tests/fails/multiple_unknown.rs:6:18
+  |
+6 |     #[cache_diff(unknown = "value")]
+  |                  ^^^^^^^
+
+error: Unknown cache_diff attribute: `unknown`. Must be one of `rename`, `display`, `ignore`
+ --> tests/fails/multiple_unknown.rs:7:18
+  |
+7 |     #[cache_diff(unknown = function)]
+  |                  ^^^^^^^
