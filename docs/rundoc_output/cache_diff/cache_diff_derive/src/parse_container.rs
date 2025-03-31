@@ -72,7 +72,7 @@ impl ParseContainer {
                             )
                         ))
                     } else {
-                        // Field is ignored
+                        // Field is ignored with no errors, do not add it to the tracked vec
                     }
                 }
                 Ok(active_field) => fields.push(active_field),

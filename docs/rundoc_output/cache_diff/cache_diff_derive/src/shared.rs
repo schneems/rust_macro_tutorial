@@ -1,4 +1,27 @@
-// File: `cache_diff_derive/src/shared.rs`
+//! Shared logic for parsing
+//!
+//! ## Errors
+//!
+//! - [`ErrorBank`]: Type alias, used for error accumulation. Treat this type as a "maybe error" as it may be empty.
+//!   Known errors should be converted into a [`syn::Error`] with [`combine`].
+//! - [`combine`]: Converts an ErrorBank to a `Option<syn::Error>`.
+//!
+//! ## General Parsing
+//!
+//! Note: The term "attribute" here refers to a single `<k> = <v>` or `<v>` within a `#[cache_diff(...)]`. But a
+//!       `syn::Attribute` refers to the entire contents on the inside of a `#[]`, for clarity I'll refer
+//!       to these as either `syn::Attribute`-s or "attribute blocks."
+//!
+//! - [`WithSpan`]: A helper struct that annotates a parsed `T` with span information.
+//! - [`parse_attrs`]: Turn `&[syn::Attribute]` into `Vec<T>`. Accumulates the first parse error per attribute block (if there is one).
+//!
+//! ## Strum defined enums
+//!
+//! These functions expect the parsed attribute to be represented as an enum that implements `strum::EnumDiscriminants`
+//!
+//!   - [`known_attribute`]: Parses a string into a strum discriminant, this is useful for later parsing it into the actual enum.
+//!   - [`check_exclusive`]: Asserts any attributes that must be used alone are. Accumulates an error for every attribute that does not.
+//!   - [`unique`]: Ensures that no attribute is repeated or accumulates all instances with repetition.
 
 use crate::{MACRO_NAME, NAMESPACE};
 use std::collections::{HashSet, VecDeque};
@@ -9,6 +32,10 @@ use std::{collections::HashMap, fmt::Display, str::FromStr};
 /// Does not charge overdraft fees
 pub(crate) type ErrorBank = VecDeque<syn::Error>;
 
+/// Combines multiple errors into one
+///
+/// If no errors, returns `None` otherwise returns all errors into a single `syn::Error`.
+/// As an FYI: Errors can be split later by using [syn::Error::into_iter](https://docs.rs/syn/2.0.100/syn/struct.Error.html#impl-IntoIterator-for-Error)
 pub(crate) fn combine(mut errors: ErrorBank) -> Option<syn::Error> {
     if let Some(mut error) = errors.pop_front() {
         for e in errors {
@@ -20,9 +47,46 @@ pub(crate) fn combine(mut errors: ErrorBank) -> Option<syn::Error> {
     }
 }
 
-/// Enforce exclusive attributes
+/// Guarantees all attributes (`<k> = <v>` or `<v>`) are specified only once
+///
+/// Raises an error for each duplicated attribute `#[cache_diff(ignore, ignore)]`.
+/// If no duplicate attributes returns a lookup by enum discriminant with span information.
+pub(crate) fn unique<T>(
+    parsed_attributes: impl IntoIterator<Item = WithSpan<T>>,
+) -> Result<HashMap<T::Discriminant, WithSpan<T>>, syn::Error>
+where
+    T: strum::IntoDiscriminant + syn::parse::Parse,
+    T::Discriminant: Eq + Display + std::hash::Hash + Copy,
+{
+    let mut seen = HashMap::new();
+    let mut errors = ErrorBank::new();
+    for attribute in parsed_attributes {
+        let WithSpan(ref parsed, span) = attribute;
+        let key = parsed.discriminant();
+        if let Some(WithSpan(_, prior)) = seen.insert(key, attribute) {
+            errors.push_back(syn::Error::new(
+                span,
+                format!("{MACRO_NAME} duplicate attribute: `{key}`"),
+            ));
+            errors.push_back(syn::Error::new(
+                prior,
+                format!("previously `{key}` defined here"),
+            ));
+        }
+    }
+
+    if let Some(error) = combine(errors) {
+        Err(error)
+    } else {
+        Ok(seen)
+    }
+}
+
+/// Check exclusive attributes
 ///
 /// Errors if an exclusive attribute is used with any other attributes.
+/// For example `ignore` would negate any other attributes so it is
+/// mutually exclusive.
 ///
 /// Does NOT check for repeated attributes for that, use [`unique`]
 pub(crate) fn check_exclusive<T>(
@@ -70,7 +134,8 @@ where
 
 /// Parses one bare word like "rename" for any iterable enum, and that's it
 ///
-/// Won't parse an equal sign or anything else
+/// Won't parse an equal sign or anything else. Emits all known keys for
+/// debugging help when an unknown string is passed in
 pub(crate) fn known_attribute<T>(identity: &syn::Ident) -> syn::Result<T>
 where
     T: FromStr + strum::IntoEnumIterator + Display,
@@ -91,6 +156,9 @@ where
 }
 
 /// Parse attributes into a vector
+///
+/// Returns at least one error per attribute block `#[attribute(...)]` if it cannot
+/// be parsed.
 pub(crate) fn parse_attrs<T>(attrs: &[syn::Attribute]) -> Result<Vec<T>, syn::Error>
 where
     T: syn::parse::Parse,
@@ -123,86 +191,9 @@ where
 #[derive(Debug)]
 pub(crate) struct WithSpan<T>(pub(crate) T, pub(crate) proc_macro2::Span);
 
-impl<T> WithSpan<T> {
-    #[cfg(test)]
-    pub(crate) fn into_inner(self) -> T {
-        self.0
-    }
-}
-
 impl<T: syn::parse::Parse> syn::parse::Parse for WithSpan<T> {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let span = input.span();
         Ok(WithSpan(input.parse()?, span))
-    }
-}
-
-/// Guarantees all attributes are specified only once
-pub(crate) fn unique<T>(
-    parsed_attributes: impl IntoIterator<Item = WithSpan<T>>,
-) -> Result<HashMap<T::Discriminant, WithSpan<T>>, syn::Error>
-where
-    T: strum::IntoDiscriminant + syn::parse::Parse,
-    T::Discriminant: Eq + Display + std::hash::Hash + Copy,
-{
-    let mut seen = HashMap::new();
-    let mut errors = ErrorBank::new();
-    for attribute in parsed_attributes {
-        let WithSpan(ref parsed, span) = attribute;
-        let key = parsed.discriminant();
-        if let Some(WithSpan(_, prior)) = seen.insert(key, attribute) {
-            errors.push_back(syn::Error::new(
-                span,
-                format!("{MACRO_NAME} duplicate attribute: `{key}`"),
-            ));
-            errors.push_back(syn::Error::new(
-                prior,
-                format!("previously `{key}` defined here"),
-            ));
-        }
-    }
-
-    if let Some(error) = combine(errors) {
-        Err(error)
-    } else {
-        Ok(seen)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    // Test use
-    use super::*;
-    // Test code
-    #[test]
-    fn test_parse_attrs_vec_demo() {
-        let field: syn::Field = syn::parse_quote! {
-            #[cache_diff("Ruby version")]
-            name: String
-        };
-
-        assert_eq!(
-            vec![syn::parse_str::<syn::LitStr>(r#""Ruby version""#).unwrap()],
-            parse_attrs::<syn::LitStr>(&field.attrs).unwrap()
-        );
-    }
-
-    #[test]
-    fn test_parse_attrs_with_span_vec_demo() {
-        let field: syn::Field = syn::parse_quote! {
-            #[cache_diff("Ruby version")]
-            name: String
-        };
-
-        assert_eq!(
-            &syn::parse_str::<syn::LitStr>(r#""Ruby version""#).unwrap(),
-            parse_attrs::<WithSpan<syn::LitStr>>(&field.attrs)
-                .unwrap()
-                .into_iter()
-                .map(WithSpan::into_inner)
-                .collect::<Vec<_>>()
-                .first()
-                .unwrap()
-        );
     }
 }
